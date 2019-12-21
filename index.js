@@ -52,8 +52,8 @@ function getRhymingWords(word) {
 
 function sendLinguatoolsSentenceRequest(options) {
   let url = `https://lt-nlgservice.herokuapp.com/rest/english/realise?subject=${options.subject}`;
-  if (typeof options.object === 'array' && options.object.length > 0) {
-    options.object.forEach((obj) => url += `&object=${obj}`);
+  if (options.objects && Array.isArray(options.objects) && options.objects.length > 0) {
+    options.objects.forEach((obj) => url += `&object=${obj}`);
   }
   return httpGet(url);
 }
@@ -82,7 +82,7 @@ exports.writePoem = (req, res) => {
   	console.log(`Found ${rhymingWords.length} words that rhyme with ${word}.`);
     const objects = rhymingWords.map((w) => w.word).slice(0,3);
     console.log(objects);
-    getSentence({'subject': subject, 'object': objects}).then((sentence) => {
+    getSentence({'subject': subject, 'objects': objects}).then((sentence) => {
       res.status(200).send(sentence);
     });
   });
