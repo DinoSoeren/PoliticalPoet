@@ -72,6 +72,7 @@ function getSentence(options) {
 
 function generateText(basis) {
   return new Promise((resolve) => {
+    console.log(`Calling DeepAI to generate text from: ${basis}`);
     deepai.callStandardApi('text-generator', {
       'text': basis,
     }).then((text) => {
