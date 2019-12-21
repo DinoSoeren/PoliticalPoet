@@ -39,7 +39,7 @@ function httpGet(api) {
 }
 
 function sendDatamuseRhymeRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?rel_rhy=${word}`);
+  return httpGet(`https://api.datamuse.com/words?sl=${word}`);
 }
 
 function getRhymingWords(word) {
