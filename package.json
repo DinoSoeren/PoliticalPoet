@@ -1,5 +1,8 @@
 {
-  "name": "sample-http",
-  "version": "0.0.1"
+  "name": "politicalpoet",
+  "version": "0.0.1",
+  "dependencies": {
+    "deepai": "^1.0.15"
+  }
 }
 

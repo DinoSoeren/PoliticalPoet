@@ -1,4 +1,6 @@
 const https = require('https');
+const deepai = require('deepai');
+deepai.setApiKey('quickstart-QUdJIGlzIGNvbWluZy4uLi4K');
 
 const subjects = [
   'earth','climate','gender',
@@ -68,6 +70,18 @@ function getSentence(options) {
   });
 }
 
+function generateText(basis) {
+  return new Promise((resolve) => {
+    deepai.callStandardApi('text-generator', {
+      'text': basis,
+    }).then((text) => {
+      resolve(text);
+    }).catch(() => {
+      resolve('No text for: ' + basis);
+    });
+  });
+}
+
 /**
  * Responds to any HTTP request.
  *
@@ -81,9 +95,9 @@ exports.writePoem = (req, res) => {
   getRhymingWords(word).then((rhymingWords) => {
   	console.log(`Found ${rhymingWords.length} words that rhyme with ${word}.`);
     const objects = rhymingWords.map((w) => w.word).slice(0,3);
-    console.log(objects);
-    getSentence({'subject': subject, 'objects': objects}).then((sentence) => {
-      res.status(200).send(sentence);
+    // getSentence({'subject': subject, 'objects': objects})
+    generateText(objects.join(' ')).then((text) => {
+      res.status(200).send(text);
     });
   });
 };
