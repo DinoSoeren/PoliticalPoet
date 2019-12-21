@@ -81,6 +81,7 @@ exports.writePoem = (req, res) => {
   getRhymingWords(word).then((rhymingWords) => {
   	console.log(`Found ${rhymingWords.length} words that rhyme with ${word}.`);
     const objects = rhymingWords.map((w) => w.word).slice(0,3);
+    console.log(objects);
     getSentence({'subject': subject, 'object': objects}).then((sentence) => {
       res.status(200).send(sentence);
     });
