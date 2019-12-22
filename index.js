@@ -219,7 +219,7 @@ function generateText(basis) {
 function extractPhrasesFrom(text, numPhrases = 3) {
   const sentenceArray = text.split(/[\.\!\?\,]/);
   const phrases = new Array(numPhrases);
-  const startIdx = getRandomBetween(1, sentenceArray.length);
+  const startIdx = 1; // getRandomBetween(1, sentenceArray.length);
   for (let i = 0; i < numPhrases; i++) {
     const sentence = sentenceArray[startIdx + i];
     const words = sentence.trim().split(' ').map((w) => w.trim());
@@ -273,7 +273,6 @@ async function writePoemAsync(person) {
  * @param {!express:Response} res HTTP response context.
  */
 exports.writePoem = (req, res) => {
-  console.log(`Environment variables: ${JSON.stringify(process.env)}`);
   const personName = req.query.name || req.body.name;
   const person = personName ? {name: personName} : getRandomPerson();
   writePoemAsync(person).then((poem) => {
@@ -286,4 +285,3 @@ exports.writePoem = (req, res) => {
     res.status(500).send(err);
   });
 };
-
