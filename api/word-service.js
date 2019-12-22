@@ -67,7 +67,6 @@ const getRhymingWordsAsync = exports.getRhymingWordsAsync = async function(word)
       console.log(`Found ${words.length} near rhymes with ${word}.`);
     } catch (err) {
       console.log(`Failed to get rhymes for ${word}. ${err.message}.`);
-      throw err;
     }
   }
 
@@ -100,7 +99,6 @@ const getSynonymsAsync = exports.getSynonymsAsync = async function(word) {
       console.log(`Found ${words.length} words that sound like ${word}.`);
     } catch (err) {
       console.log(`Failed to get words that sound like ${word}. ${err.message}.`);
-      throw err;
     }
   }
 
@@ -128,7 +126,6 @@ const getPredecessorsAsync = exports.getPredecessorsAsync = async function(word)
     console.log(`Found ${words.length} predecessors of ${word}.`);
   } catch (err) {
     console.log(`Failed to get predecessors for ${word}. ${err.message}`);
-    throw err;
   }
 
   return words;
