@@ -67,7 +67,7 @@ exports.getRhymingWordsAsync = function(word) {
 exports.getRandomRhymingWordAsync = function(word) {
   return new Promise((resolve) => {
     getRhymingWordsAsync(word).then((rhymingWords) => {
-      const rhyme = rhymingWords.length > 0 ? getRandomItem(rhymingWords, 5).word : word;
+      const rhyme = rhymingWords.length > 0 ? Utils.getRandomItem(rhymingWords, 5).word : word;
       console.log(`Using ${rhyme} to rhyme with ${word}`);
       resolve(rhyme);
     }).catch((err) => {
@@ -96,7 +96,7 @@ exports.getSynonymsAsync = function(word) {
 exports.getRandomSynonymAsync = function(word) {
   return new Promise((resolve) => {
     getSynonymsAsync(word).then((words) => {
-      const synonym = words.length > 0 ? getRandomItem(words, 5).word : word;
+      const synonym = words.length > 0 ? Utils.getRandomItem(words, 5).word : word;
       console.log(`Using ${synonym} as a synonym for ${word}`);
       resolve(synonym);
     }).catch((err) => {
@@ -125,7 +125,7 @@ exports.getPredecessorsAsync = function(word) {
 exports.getRandomPredecessorAsync = function(word) {
   return new Promise((resolve) => {
     getPredecessorsAsync(word).then((words) => {
-      const predecessor = words.length > 0 ? getRandomItem(words, 5).word : word;
+      const predecessor = words.length > 0 ? Utils.getRandomItem(words, 5).word : word;
       console.log(`Using ${predecessor} as a predecessor for ${word}`);
       resolve(predecessor);
     }).catch((err) => {
