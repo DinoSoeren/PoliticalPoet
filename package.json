@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "dependencies": {
     "deepai": "^1.0.15",
-    "sentencer": "^0.2.0"
+    "sentencer": "^0.2.0",
+    "twitter": "^1.7.1"
   }
 }
 

@@ -1,7 +1,8 @@
 const https = require('https');
 const deepai = require('deepai');
 deepai.setApiKey('quickstart-QUdJIGlzIGNvbWluZy4uLi4K');
-var Sentencer = require('sentencer');
+const Sentencer = require('sentencer');
+const Twitter = require('twitter');
 
 const PEOPLE = [
   {name: 'Andrew Yang', twitter: '@AndrewYang'},
@@ -29,6 +30,28 @@ const VERBS = [
   'argues', 'waves', 'blesses', 'prays', 'yells', 'tweets',
   'debates', 'runs', 'focuses', 'forgets', 'remembers'
 ];
+
+const twitterClient = new Twitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+});
+
+function sendTweet(tweetText) {
+  return new Promise((resolve, reject) => {
+    twitterClient.post('statuses/update', {'status': tweetText}, (error, tweet, response) => {
+      if (error) {
+        console.log(`Error: Failed to send tweet. ${JSON.stringify(error)}`);
+        reject(error);
+      } else {
+        console.log(`Successfully posted tweet: ${tweet}`);
+        console.log(`Response: ${JSON.stringify(response)}`);
+        resolve(response);
+      }
+    });
+  });
+}
 
 function getRandomBetween(i, j) {
   return Math.floor(Math.random() * j) + i;
@@ -250,6 +273,9 @@ exports.writePoem = (req, res) => {
   const person = personName ? {name: personName} : getRandomPerson();
   writePoemAsync(person).then((poem) => {
     res.status(200).send(poem);
+    if (process.env.SEND_TWEET) {
+      sendTweet(poem);
+    }
   }).catch((err) => {
     res.status(500).send(err);
   });
