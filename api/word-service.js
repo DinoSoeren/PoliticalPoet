@@ -75,7 +75,11 @@ const getRhymingWordsAsync = exports.getRhymingWordsAsync = async function(word)
 
 const getRhymeAsync = exports.getRhymeAsync = async function(word) {
   const rhymes = await getRhymingWordsAsync(word);
-  const rhyme = rhymes.length > 0 ? Utils.getRandomItem(rhymingWords, Math.floor(Math.min(3, rhymes.length/3))).word : word;
+  if (!rhymes || rhymes.length === 0) {
+    rhymes = [{word: word}];
+  }
+  const maxIdx = Math.floor(Math.min(4, rhymes.length/4));
+  const rhyme = rhymes.length > 0 ? Utils.getRandomItem(rhymingWords, maxIdx).word : word;
   console.log(`Using ${rhyme} to rhyme with ${word}`);
   return rhyme;
 }
@@ -108,7 +112,7 @@ const getSynonymsAsync = exports.getSynonymsAsync = async function(word) {
 const getSynonymAsync = exports.getSynonymAsync = async function(word) {
   const synonyms = await getSynonymsAsync(word);
   if (!synonyms || synonyms.length === 0) {
-    synonyms = [word];
+    synonyms = [{word: word}];
   }
   const maxIdx = Math.floor(Math.min(4, synonyms.length/4));
   const synonym = Utils.getRandomItem(synonyms, maxIdx).word;
@@ -134,7 +138,7 @@ const getPredecessorsAsync = exports.getPredecessorsAsync = async function(word)
 const getPredecessorAsync = exports.getPredecessorAsync = async function(word) {
   const predecessors = await getPredecessorsAsync(word);
   if (!predecessors || predecessors.length === 0) {
-    predecessors = [generateAdjective()];
+    predecessors = [{word: generateAdjective()}];
   }
   const maxIdx = Math.floor(Math.min(4, predecessors.length/4));
   const predecessor = Utils.getRandomItem(predecessors, maxIdx).word;
