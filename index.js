@@ -126,7 +126,7 @@ function generateAdjective() {
 }
 
 function clean(text) {
-  return text.replace('\n', '').replace(/[^A-Za-z' ]/g, '');
+  return text.replace('\n', '').replace(/[^A-Za-z'\.\!\,\? ]/g, '');
 }
 
 function generateText(basis) {
