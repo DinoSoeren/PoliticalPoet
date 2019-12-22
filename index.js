@@ -114,7 +114,7 @@ function generateText(basis) {
       'text': basis,
     }).then((text) => {
       console.log(`Generated text from DeepAI: ${JSON.stringify(text)}`);
-      resolve(text);
+      resolve(text.output);
     }).catch((err) => {
       console.log(`Error: Failed to generate text for '${basis}'. ${err}`);
       reject(err);
