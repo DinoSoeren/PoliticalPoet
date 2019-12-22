@@ -200,6 +200,10 @@ function clean(text) {
   return text.replace('\n', '').replace(/[^A-Za-z'\.\!\,\? ]/g, '');
 }
 
+function removeSmallWords(text) {
+  return text.split(' ').filter((w) => w.trim().length > 3).join(' ');
+}
+
 function generateText(basis) {
   return new Promise((resolve, reject) => {
     console.log(`Calling DeepAI to generate text from: ${basis}`);
@@ -237,19 +241,20 @@ async function writePoemAsync(person) {
   const object = isPersonFirst ? topic : person.name;
   console.log(`Chosen subject: ${subject}`);
   const poemLines = [];
-  const personSentence = await getSentence({'subject': subject, 'verb': getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst});
+  const personSentence = removeSmallWords(await getSentence({'subject': subject, 'verb': getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst}));
   poemLines.push(personSentence);
-  const personRhymeSentence = await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(getLastItem(personSentence.split(' ')))});
+  const personRhymeSentence = removeSmallWords(await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(getLastItem(personSentence.split(' ')))}));
   poemLines.push(personRhymeSentence);
   console.log(`Poem so far:\n ${poemLines.join('\n')}`);
   const text = await generateText(personSentence);
   const phrases = extractPhrasesFrom(text, (POEM_LINE_COUNT-2)/2);
   for (let i = 0; i < phrases.length; i++) {
-    poemLines.push(phrases[i].words.join(' '));
-    const words = phrases[i].words;
+    const phrase = removeSmallWords(phrases[i].words.join(' '));
+    poemLines.push(phrase);
+    const words = phrase.split(' ');
     const rhyme = await getRandomRhymingWord(getLastItem(words));
     const synonym = await getRandomSynonym(getLongestWord(words));
-    const rhymingSentence = await getSentence({'subject': synonym, 'verb': getRandomVerb(), 'object': rhyme});
+    const rhymingSentence = removeSmallWords(await getSentence({'subject': synonym, 'verb': getRandomVerb(), 'object': rhyme}));
     poemLines.push(rhymingSentence);
   }
   // Swap consecutive lines
