@@ -230,7 +230,7 @@ function clean(text) {
 }
 
 function removeSmallWords(text) {
-  return text.split(' ').filter((w) => w.trim().replace(/[^A-Za-z']/g, '').length > 3).join(' ');
+  return text.split(' ').filter((w) => w.trim().replace(/[^A-Za-z']/g, '').length > getRandomBetween(0, 4)).join(' ');
 }
 
 function generateText(basis) {
