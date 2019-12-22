@@ -72,7 +72,7 @@ function getRhymingWords(word) {
 function sendLinguatoolsSentenceRequest(options) {
   let url = `https://lt-nlgservice.herokuapp.com/rest/english/realise?subject=${options.subject}`;
   if (options.verb) {
-    url += `&verb=${verb}`;
+    url += `&verb=${options.verb}`;
   }
   if (options.objects && Array.isArray(options.objects) && options.objects.length > 0) {
     options.objects.forEach((obj) => url += `&object=${obj}`);
