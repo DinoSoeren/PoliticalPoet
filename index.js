@@ -1,215 +1,24 @@
-const https = require('https');
+const HttpService = require('./api/http-service');
+const TwitterService = require('./api/twitter-service');
+const WordService = require('./api/word-service');
+const Utils = require('./utils');
+
 const deepai = require('deepai');
 deepai.setApiKey(process.env.DEEP_AI_API_KEY);
-const Sentencer = require('sentencer');
-const Twitter = require('twitter');
-
-const PEOPLE = [
-  {name: 'Andrew Yang', twitter: '@AndrewYang'},
-  {name: 'Bernie Sanders', twitter: '@BernieSanders'},
-  {name: 'Donald Trump', twitter: '@realDonaldTrump'},
-  {name: 'Joe Biden', twitter: '@JoeBiden'},
-  {name: 'Elizabeth Warren', twitter: '@ewarren'},
-  {name: 'Pete Buttigieg', twitter: '@PeteButtigieg'},
-  {name: 'Amy Klobuchar', twitter: '@amyklobuchar'},
-  {name: 'Tulsi Gabbard', twitter: '@TulsiGabbard'},
-];
-
-const TOPICS = [
-  'earth','climate','gender',
-  'food','health','brain',
-  'treason','democracy','serenity',
-  'love','hate','mail','crime',
-  'death','banana','joke','monkey'
-];
-
-const VERBS = [
-  'is', 'go', 'do', 'take', 'look', 'get', 'talk',
-  'think', 'hope', 'dream', 'fake', 'like', 'hate',
-  'argue', 'wave', 'blesse', 'pray', 'yell', 'tweet',
-  'debate', 'run', 'focus', 'forget', 'remember'
-];
-
-const twitterClient = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
-});
-
-function sendTweet(tweetText) {
-  console.log(`Sending tweet: ${tweetText}`);
-  return new Promise((resolve, reject) => {
-    twitterClient.post('statuses/update', {'status': tweetText}, (error, tweet, response) => {
-      if (error) {
-        console.log(`Error: Failed to send tweet. ${JSON.stringify(error)}`);
-        reject(error);
-      } else {
-        console.log(`Successfully posted tweet: ${tweet}`);
-        console.log(`Response: ${JSON.stringify(response)}`);
-        resolve(response);
-      }
-    });
-  });
-}
-
-function getRandomBetween(i, j) {
-  return Math.floor(Math.random() * j) + i;
-}
-
-function getRandomItem(arr, maxIdx = Infinity) {
-  return arr[getRandomBetween(0, Math.min(arr.length, maxIdx))];
-}
-
-function getLastItem(arr) {
-  return arr[arr.length-1];
-}
-
-function getRandomTopic() {
-  return getRandomItem(TOPICS);
-}
-
-function getRandomPerson() {
-  return getRandomItem(PEOPLE);
-}
-
-function getRandomVerb() {
-  return getRandomItem(VERBS);
-}
-
-function getLongestWord(words) {
-  let longest = words[0];
-  words.forEach((word) => word.length > longest.length ? longest = word : word = word);
-  return longest;
-}
-
-function generateAdjective() {
-  return Sentencer.make("{{ adjective }}");
-}
-
-function generateNoun() {
-  return Sentencer.make("{{ noun }}");
-}
-
-function httpGet(api) {
-  console.log(`GET: ${api}`);
-  return new Promise((resolve, reject) => {
-    https.get(api, (resp) => {
-      let data = '';
-      resp.on('data', (chunk) => {
-        data += chunk;
-      });
-      resp.on('end', () => {
-        const result = JSON.parse(data);
-        resolve(result);
-      });
-    }).on("error", (err) => {
-      console.log(`HTTP Error: ${err.message}`);
-      reject(err);
-    });
-  });
-}
-
-function sendDatamuseRhymeRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?rel_nry=${word.replace(/[^A-Za-z]/g, '')}`);
-}
-
-function getRhymingWords(word) {
-  return new Promise((resolve, reject) => {
-    sendDatamuseRhymeRequest(word).then((words) => {
-      console.log(`Found ${words.length} words that rhyme with ${word}.`);
-      resolve(words);
-    }).catch((err) => {
-      console.log(`Failed to get rhymes for ${word}: ${err.message}`);
-      reject(err);
-    });
-  });
-}
-
-function getRandomRhymingWord(word) {
-  return new Promise((resolve) => {
-    getRhymingWords(word).then((rhymingWords) => {
-      const rhyme = rhymingWords.length > 0 ? getRandomItem(rhymingWords, 5).word : word;
-      console.log(`Using ${rhyme} to rhyme with ${word}`);
-      resolve(rhyme);
-    }).catch((err) => {
-      console.log(`Failed to get rhyme for ${word}: ${err.message}`);
-      resolve(word);
-    });
-  });
-}
-
-function sendDatamuseSynonymRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?rel_syn=${word.replace(/[^A-Za-z]/g, '')}`);
-}
-
-function getSynonyms(word) {
-  return new Promise((resolve, reject) => {
-    sendDatamuseSynonymRequest(word).then((words) => {
-      console.log(`Found ${words.length} synonyms of ${word}.`);
-      resolve(words);
-    }).catch((err) => {
-      console.log(`Failed to get synonyms for ${word}: ${err.message}`);
-      reject(err);
-    });
-  });
-}
-
-function getRandomSynonym(word) {
-  return new Promise((resolve) => {
-    getSynonyms(word).then((words) => {
-      const synonym = words.length > 0 ? getRandomItem(words, 5).word : word;
-      console.log(`Using ${synonym} as a synonym for ${word}`);
-      resolve(synonym);
-    }).catch((err) => {
-      console.log(`Failed to get synonym for ${word}: ${err.message}`);
-      resolve(word);
-    });
-  });
-}
-
-function sendDatamusePredecessorsRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?rel_bgb=${word.replace(/[^A-Za-z]/g, '')}`);
-}
-
-function getPredecessors(word) {
-  return new Promise((resolve, reject) => {
-    sendDatamusePredecessorsRequest(word).then((words) => {
-      console.log(`Found ${words.length} predecessors of ${word}.`);
-      resolve(words);
-    }).catch((err) => {
-      console.log(`Failed to get predecessors for ${word}: ${err.message}`);
-      reject(err);
-    });
-  });
-}
-
-function getRandomPredecessor(word) {
-  return new Promise((resolve) => {
-    getPredecessors(word).then((words) => {
-      const predecessor = words.length > 0 ? getRandomItem(words, 5).word : word;
-      console.log(`Using ${predecessor} as a predecessor for ${word}`);
-      resolve(predecessor);
-    }).catch((err) => {
-      console.log(`Failed to get predecessor for ${word}: ${err.message}`);
-      resolve(word);
-    });
-  });
-}
 
 async function sendLinguatoolsSentenceRequest(options) {
   const host = 'https://lt-nlgservice.herokuapp.com/rest/english/realise';
   let url = `${host}?subject=${options.subject}&verb=${options.verb}&object=${options.object}`;
   if (options.useObjDet) url += `&objdet=the`;
-  const isPerfect = typeof options.isPerfect !== 'undefined' ? options.isPerfect : getRandomBetween(0, 2) === 0;
+  const isPerfect = typeof options.isPerfect !== 'undefined' ? options.isPerfect : Utils.getRandomBool();
   if (isPerfect) url += '&perfect=perfect';
-  const isPassive = typeof options.isPassive !== 'undefined' ? options.isPassive : getRandomBetween(0, 2) === 0;
+  const isPassive = typeof options.isPassive !== 'undefined' ? options.isPassive : Utils.getRandomBool();
   if (!isPerfect && isPassive) url += '&passive=passive';
-  const isQuestion = typeof options.isQuestion !== 'undefined' ? options.isQuestion : getRandomBetween(0, 2) === 0;
+  const isQuestion = typeof options.isQuestion !== 'undefined' ? options.isQuestion : Utils.getRandomBool();
   if (isQuestion) url += '&sentencetype=yesno';
   const hasModifier = typeof options.hasModifier !== 'undefined' ? options.hasModifier : getRandomBetween(0, 4) !== 0;
-  if (hasModifier) url += `&objmod=${getRandomBetween(0, 2) === 0 ? generateAdjective() : await getRandomPredecessor(options.object)}`;
-  return await httpGet(url);
+  if (hasModifier) url += `&objmod=${Utils.getRandomBool() ? WordService.generateAdjective() : await WordService.getRandomPredecessorAsync(options.object)}`;
+  return await HttpService.httpGet(url);
 }
 
 function getSentence(options) {
@@ -225,22 +34,13 @@ function getSentence(options) {
   });
 }
 
-function clean(text) {
-  return text.replace('\n', '').replace(/[^A-Za-z'\.\!\,\? ]/g, '');
-}
-
-function removeSmallWords(text) {
-  const newText = text.split(' ').filter((w) => w.trim().replace(/[^A-Za-z']/g, '').length > getRandomBetween(0, 4)).join(' ');
-  return newText.trim() || text;
-}
-
 function generateText(basis) {
   return new Promise((resolve, reject) => {
     console.log(`Calling DeepAI to generate text from: ${basis}`);
     deepai.callStandardApi('text-generator', {
       'text': basis,
     }).then((text) => {
-      const cleanedText = clean(text.output);
+      const cleanedText = Utils.cleanText(text.output);
       console.log(`Generated text from DeepAI: ${cleanedText}`);
       resolve(cleanedText);
     }).catch((err) => {
@@ -253,7 +53,7 @@ function generateText(basis) {
 function extractPhrasesFrom(text, numPhrases = 3) {
   const sentenceArray = text.split(/[\.\!\?\,]/);
   const phrases = new Array(numPhrases);
-  const startIdx = getRandomBetween(1, sentenceArray.length - numPhrases);
+  const startIdx = Utils.getRandomBetween(1, sentenceArray.length - numPhrases);
   for (let i = 0; i < numPhrases; i++) {
     const sentence = sentenceArray[startIdx + i];
     const words = sentence.trim().split(' ').map((w) => w.trim());
@@ -265,27 +65,27 @@ function extractPhrasesFrom(text, numPhrases = 3) {
 const POEM_LINE_COUNT = 4;
 
 async function writePoemAsync(person) {
-  const selectedTopic = getRandomBetween(0, 4) === 0 ? getRandomTopic() : generateNoun();
-  const topic = getRandomBetween(0, 4) === 0 ? selectedTopic : await getRandomSynonym(selectedTopic);
-  const isPersonFirst = getRandomBetween(0, 2) === 0;
+  const selectedTopic = Utils.getRandomBetween(0, 4) === 0 ? WordService.getRandomTopic() : WordService.generateNoun();
+  const topic = Utils.getRandomBetween(0, 4) === 0 ? selectedTopic : await WordService.getRandomSynonymAsync(selectedTopic);
+  const isPersonFirst = Utils.getRandomBool();
   const subject = isPersonFirst ? person.name : topic;
   const object = isPersonFirst ? topic : person.name;
   console.log(`Chosen subject: ${subject}`);
   const poemLines = [];
-  const personSentence = removeSmallWords(await getSentence({'subject': subject, 'verb': getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst}));
+  const personSentence = Utils.removeSmallWords(await getSentence({'subject': subject, 'verb': WordService.getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst}));
   poemLines.push(personSentence);
-  const personRhymeSentence = removeSmallWords(await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(getLastItem(personSentence.split(' ')))}));
+  const personRhymeSentence = Utils.removeSmallWords(await getSentence({'subject': WordService.generateNoun(), 'verb': WordService.getRandomVerb(), 'object': await WordService.getRandomRhymingWordAsync(Utils.getLastItem(personSentence.split(' ')))}));
   poemLines.push(personRhymeSentence);
   console.log(`Poem so far:\n ${poemLines.join('\n')}`);
   const text = await generateText(personSentence);
   const phrases = extractPhrasesFrom(text, (POEM_LINE_COUNT-2)/2);
   for (let i = 0; i < phrases.length; i++) {
-    const phrase = removeSmallWords(phrases[i].words.join(' '));
+    const phrase = Utils.removeSmallWords(phrases[i].words.join(' '));
     poemLines.push(phrase);
     const words = phrase.split(' ');
-    const rhyme = await getRandomRhymingWord(getLastItem(words));
-    const synonym = await getRandomSynonym(getLongestWord(words));
-    const rhymingSentence = removeSmallWords(await getSentence({'subject': synonym, 'verb': getRandomVerb(), 'object': rhyme, 'isPassive': false}));
+    const rhyme = await WordService.getRandomRhymingWordAsync(Utils.getLastItem(words));
+    const synonym = await WordService.getRandomSynonymAsync(Utils.getLongestWord(words));
+    const rhymingSentence = Utils.removeSmallWords(await getSentence({'subject': synonym, 'verb': WordService.getRandomVerb(), 'object': rhyme, 'isPassive': false}));
     poemLines.push(rhymingSentence);
   }
   // Swap consecutive lines
@@ -294,7 +94,7 @@ async function writePoemAsync(person) {
     poemLines[i+1] = poemLines[i+2];
     poemLines[i+2] = temp;
   }
-  const shiftAmount = getRandomBetween(0, (POEM_LINE_COUNT/2)) * 2;
+  const shiftAmount = Utils.getRandomBetween(0, POEM_LINE_COUNT);
   console.log(`Shifting lines by ${shiftAmount}`);
   for (let i = 0; i < shiftAmount; i++) {
     poemLines.push(poemLines.shift());
@@ -310,12 +110,12 @@ async function writePoemAsync(person) {
  */
 exports.writePoem = (req, res) => {
   const personName = req.query.name || req.body.name;
-  const person = personName ? {name: personName} : getRandomPerson();
+  const person = personName ? {name: personName} : WordService.getRandomPerson();
   writePoemAsync(person).then((poem) => {
     const tweet = `${poem}\n\n~~a #shittypoem about ${person.twitter} written by a bot 🤖~~`;
     res.status(200).send(tweet);
     if (process.env.SEND_TWEET) {
-      sendTweet(tweet);
+      TwitterService.sendTweet(tweet);
     }
   }).catch((err) => {
     res.status(500).send(err);
