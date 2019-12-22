@@ -2,6 +2,17 @@ const https = require('https');
 const deepai = require('deepai');
 deepai.setApiKey('quickstart-QUdJIGlzIGNvbWluZy4uLi4K');
 
+const people = [
+  {name: 'Andrew Yang', twitter: '@AndrewYang'},
+  {name: 'Bernie Sanders', twitter: '@BernieSanders'},
+  {name: 'Donald Trump', twitter: '@realDonaldTrump'},
+  {name: 'Joe Biden', twitter: '@JoeBiden'},
+  {name: 'Elizabeth Warren', twitter: '@ewarren'},
+  {name: 'Pete Buttigieg', twitter: '@PeteButtigieg'},
+  {name: 'Amy Klobuchar', twitter: '@amyklobuchar'},
+  {name: 'Tulsi Gabbard', twitter: '@TulsiGabbard'},
+];
+
 const subjects = [
   'earth','climate','gender',
   'jealousy','health','mindfulness',
@@ -39,7 +50,7 @@ function httpGet(api) {
 }
 
 function sendDatamuseRhymeRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?sl=${word}`);
+  return httpGet(`https://api.datamuse.com/words?rel_rhy=${word}`);
 }
 
 function getRhymingWords(word) {
