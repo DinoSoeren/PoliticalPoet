@@ -111,7 +111,7 @@ function httpGet(api) {
 }
 
 function sendDatamuseRhymeRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?rel_rhy=${word.replace(/[^A-Za-z]/g, '')}`);
+  return httpGet(`https://api.datamuse.com/words?rel_nry=${word.replace(/[^A-Za-z]/g, '')}`);
 }
 
 function getRhymingWords(word) {
@@ -168,7 +168,36 @@ function getRandomSynonym(word) {
   });
 }
 
-function sendLinguatoolsSentenceRequest(options) {
+function sendDatamusePredecessorsRequest(word) {
+  return httpGet(`https://api.datamuse.com/words?rel_bgb=${word.replace(/[^A-Za-z]/g, '')}`);
+}
+
+function getPredecessors(word) {
+  return new Promise((resolve, reject) => {
+    sendDatamusePredecessorsRequest(word).then((words) => {
+      console.log(`Found ${words.length} predecessors of ${word}.`);
+      resolve(words);
+    }).catch((err) => {
+      console.log(`Failed to get predecessors for ${word}: ${err.message}`);
+      reject(err);
+    });
+  });
+}
+
+function getRandomPredecessor(word) {
+  return new Promise((resolve) => {
+    getPredecessors(word).then((words) => {
+      const predecessor = words.length > 0 ? getRandomItem(words).word : word;
+      console.log(`Using ${predecessor} as a predecessor for ${word}`);
+      resolve(predecessor);
+    }).catch((err) => {
+      console.log(`Failed to get predecessor for ${word}: ${err.message}`);
+      resolve(word);
+    });
+  });
+}
+
+async function sendLinguatoolsSentenceRequest(options) {
   const host = 'https://lt-nlgservice.herokuapp.com/rest/english/realise';
   let url = `${host}?subject=${options.subject}&verb=${options.verb}&object=${options.object}`;
   if (options.useObjDet) url += `&objdet=the`;
@@ -179,8 +208,8 @@ function sendLinguatoolsSentenceRequest(options) {
   const isQuestion = typeof options.isQuestion !== 'undefined' ? options.isQuestion : getRandomBetween(0, 2) === 0;
   if (isQuestion) url += '&sentencetype=yesno';
   const hasModifier = typeof options.hasModifier !== 'undefined' ? options.hasModifier : getRandomBetween(0, 4) !== 0;
-  if (hasModifier) url += `&objmod=${generateAdjective()}`;
-  return httpGet(url);
+  if (hasModifier) url += `&objmod=${getRandomBetween(0, 2) === 0 ? generateAdjective() : await getRandomPredecessor(options.object)}`;
+  return await httpGet(url);
 }
 
 function getSentence(options) {
