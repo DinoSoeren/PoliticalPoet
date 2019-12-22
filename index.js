@@ -75,6 +75,7 @@ function getRhymingWords(word) {
       console.log(`Found ${words.length} words that rhyme with ${word}.`);
       resolve(words);
     }).catch((err) => {
+      console.log(`Failed to get rhymes for ${word}: ` + err.message);
       reject(err);
     });
   });
@@ -90,6 +91,7 @@ function getSynonyms(word) {
       console.log(`Found ${words.length} synonyms of ${word}.`);
       resolve(words);
     }).catch((err) => {
+      console.log(`Failed to get synonyms for ${word}: ` + err.message);
       reject(err);
     });
   });
