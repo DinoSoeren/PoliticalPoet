@@ -31,6 +31,10 @@ function getRandomSubject() {
   return subjects[getRandomBetween(0, subjects.length)];
 }
 
+function getRandomPerson() {
+  return people[getRandomBetween(0, people.length)];
+}
+
 function httpGet(api) {
   console.log(`GET: ${api}`);
   return new Promise((resolve, reject) => {
@@ -57,9 +61,10 @@ function sendDatamuseRhymeRequest(word) {
 function getRhymingWords(word) {
   return new Promise((resolve) => {
     sendDatamuseRhymeRequest(word).then((words) => {
+      console.log(`Found ${words.length} words that rhyme with ${word}.`);
       resolve(words);
-    }).catch(() => {
-      resolve([]);
+    }).catch((err) => {
+      reject(err);
     });
   });
 }
@@ -77,7 +82,7 @@ function getSentence(options) {
     sendLinguatoolsSentenceRequest(options).then((sentence) => {
       resolve(sentence);
     }).catch(() => {
-      resolve('No sentence for: ' + options);
+      reject('No sentence for: ' + options);
     });
   });
 }
@@ -88,9 +93,10 @@ function generateText(basis) {
     deepai.callStandardApi('text-generator', {
       'text': basis,
     }).then((text) => {
+      console.log(`Generated text from DeepAI: ${text}`);
       resolve(text);
     }).catch(() => {
-      resolve('No text for: ' + basis);
+      reject('No text for: ' + basis);
     });
   });
 }
@@ -102,11 +108,10 @@ function generateText(basis) {
  * @param {!express:Response} res HTTP response context.
  */
 exports.writePoem = (req, res) => {
-  const word = req.query.word || req.body.word || 'Yang';
+  const person = req.query.person || req.body.person || getRandomPerson();
   const subject = getRandomSubject();
   console.log(`Chosen subject: ${subject}`);
-  getRhymingWords(word).then((rhymingWords) => {
-  	console.log(`Found ${rhymingWords.length} words that rhyme with ${word}.`);
+  getRhymingWords(person).then((rhymingWords) => {
     const objects = rhymingWords.map((w) => w.word).slice(0,3);
     // getSentence({'subject': subject, 'objects': objects})
     generateText(objects.join(' ')).then((text) => {
