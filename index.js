@@ -277,9 +277,10 @@ exports.writePoem = (req, res) => {
   const personName = req.query.name || req.body.name;
   const person = personName ? {name: personName} : getRandomPerson();
   writePoemAsync(person).then((poem) => {
-    res.status(200).send(poem);
+    const tweet = `${poem}\n~~a shitty poem about ${person.twitter}~~`;
+    res.status(200).send(tweet);
     if (process.env.SEND_TWEET) {
-      sendTweet(poem);
+      sendTweet(tweet);
     }
   }).catch((err) => {
     res.status(500).send(err);
