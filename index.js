@@ -95,7 +95,7 @@ function getSentence(options) {
   return new Promise((resolve, reject) => {
     sendLinguatoolsSentenceRequest(options).then((response) => {
       console.log(`Generated sentence from Linguatools: ${response.sentence}`);
-      resolve(response.sentence);
+      resolve(response.sentence.replace('The ', ''));
     }).catch((err) => {
       console.log(`Error: Failed to get sentence for '${options}'. ${err}`);
       reject(err);
@@ -107,6 +107,10 @@ function generateAdjective() {
   return Sentencer.make("{{ adjective }}");
 }
 
+function clean(text) {
+  return text.replace('\n', '').replace(/[^A-Za-z' ]/g, '');
+}
+
 function generateText(basis) {
   return new Promise((resolve, reject) => {
     console.log(`Calling DeepAI to generate text from: ${basis}`);
@@ -114,7 +118,7 @@ function generateText(basis) {
       'text': basis,
     }).then((text) => {
       console.log(`Generated text from DeepAI: ${JSON.stringify(text)}`);
-      resolve(text.output);
+      resolve(clean(text.output));
     }).catch((err) => {
       console.log(`Error: Failed to generate text for '${basis}'. ${err}`);
       reject(err);
@@ -123,11 +127,11 @@ function generateText(basis) {
 }
 
 function extractPhrasesFrom(text, numPhrases = 3) {
-  const sentenceArray = text.replace('\n', ' ').split('.');
+  const sentenceArray = text.split('.');
   const phrases = new Array(numPhrases);
   for (let i = 0; i < numPhrases; i++) {
     const sentence = sentenceArray[getRandomBetween(0, sentenceArray.length)];
-    const words = sentence.trim().split(' ');
+    const words = sentence.trim().split(' ').map((w) => w.trim());
     const startWordIdx = Math.max(0, getRandomBetween(0, words.length - 6));
     phrases[i] = {'words': words.slice(startWordIdx, Math.min(words.length, startWordIdx + 6))};
   }
@@ -143,7 +147,7 @@ async function writePoemAsync(person) {
   const personSentence = await getSentence({'subject': person.name, 'verb': getRandomVerb(), 'objects': [subject]});
   poemLines.push(personSentence);
   const text = await generateText(personSentence);
-  const wordArray = text.split(' ');
+  const wordArray = text.split(' ').map((w) => w.trim());
   const phrases = extractPhrasesFrom(text, POEM_LINE_COUNT/2);
   poemLines.push(phrases[0].words.join(' '));
   for (let i = 1; i < phrases.length; i++) {
