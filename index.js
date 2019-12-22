@@ -57,8 +57,8 @@ function getRandomBetween(i, j) {
   return Math.floor(Math.random() * j) + i;
 }
 
-function getRandomItem(arr) {
-  return arr[getRandomBetween(0, arr.length)];
+function getRandomItem(arr, maxIdx = Infinity) {
+  return arr[getRandomBetween(0, Math.min(arr.length, maxIdx))];
 }
 
 function getLastItem(arr) {
@@ -129,7 +129,7 @@ function getRhymingWords(word) {
 function getRandomRhymingWord(word) {
   return new Promise((resolve) => {
     getRhymingWords(word).then((rhymingWords) => {
-      const rhyme = rhymingWords.length > 0 ? getRandomItem(rhymingWords).word : word;
+      const rhyme = rhymingWords.length > 0 ? getRandomItem(rhymingWords, 5).word : word;
       console.log(`Using ${rhyme} to rhyme with ${word}`);
       resolve(rhyme);
     }).catch((err) => {
@@ -158,7 +158,7 @@ function getSynonyms(word) {
 function getRandomSynonym(word) {
   return new Promise((resolve) => {
     getSynonyms(word).then((words) => {
-      const synonym = words.length > 0 ? getRandomItem(words).word : word;
+      const synonym = words.length > 0 ? getRandomItem(words, 5).word : word;
       console.log(`Using ${synonym} as a synonym for ${word}`);
       resolve(synonym);
     }).catch((err) => {
@@ -187,7 +187,7 @@ function getPredecessors(word) {
 function getRandomPredecessor(word) {
   return new Promise((resolve) => {
     getPredecessors(word).then((words) => {
-      const predecessor = words.length > 0 ? getRandomItem(words).word : word;
+      const predecessor = words.length > 0 ? getRandomItem(words, 5).word : word;
       console.log(`Using ${predecessor} as a predecessor for ${word}`);
       resolve(predecessor);
     }).catch((err) => {
