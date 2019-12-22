@@ -122,16 +122,39 @@ function generateText(basis) {
   });
 }
 
+function extractPhrasesFrom(text, numPhrases = 3) {
+  const sentenceArray = text.replace('\n', ' ').split('.');
+  const phrases = new Array(numPhrases);
+  for (let i = 0; i < numPhrases; i++) {
+    const sentence = sentenceArray[getRandomBetween(0, sentenceArray.length)];
+    const words = sentence.trim().split(' ');
+    const startWordIdx = Math.max(0, getRandomBetween(0, words.length - 6));
+    phrases[i] = {'words': words.slice(startWordIdx, Math.min(words.length, startWordIdx + 6))};
+  }
+  return phrases;
+}
+
+const POEM_LINE_COUNT = 4;
+
 async function writePoemAsync(person) {
   const subject = getRandomSubject();
   console.log(`Chosen subject: ${subject}`);
-  const sentence = await getSentence({'subject': person.name, 'verb': getRandomVerb(), 'objects': [subject]});
-  const text = await generateText(sentence);
-  /*
-  const rhymingWords = await getRhymingWords(subject);
-  const rhyme = rhymingWords.map((w) => w.word)[getRandomBetween(0, rhymingWords.length)];
-    */
-  return text;
+  const poemLines = [];
+  const personSentence = await getSentence({'subject': person.name, 'verb': getRandomVerb(), 'objects': [subject]});
+  poemLines.push(personSentence);
+  const text = await generateText(personSentence);
+  const wordArray = text.split(' ');
+  const phrases = extractPhrasesFrom(text, POEM_LINE_COUNT/2);
+  poemLines.push(phrases[0].words.join(' '));
+  for (let i = 1; i < phrases.length; i++) {
+    poemLines.push(phrases[i].words.join(' '));
+    const words = phrases[i].words;
+    const rhymingWords = await getRhymingWords(words[words.length-1]);
+    const rhyme = rhymingWords.map((w) => w.word)[getRandomBetween(0, rhymingWords.length)];
+    const rhymingSentence = await getSentence({'subject': wordArray[getRandomBetween(0, wordArray.length)], 'verb': getRandomVerb(), 'objects': [rhyme]});
+    poemLines.push(rhymingSentence);
+  }
+  return poemLines.join('\n');
 }
 
 /**
