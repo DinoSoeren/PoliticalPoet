@@ -16,7 +16,7 @@ async function sendLinguatoolsSentenceRequest(options) {
   if (!isPerfect && isPassive) url += '&passive=passive';
   const isQuestion = typeof options.isQuestion !== 'undefined' ? options.isQuestion : Utils.getRandomBool();
   if (isQuestion) url += '&sentencetype=yesno';
-  const hasModifier = typeof options.hasModifier !== 'undefined' ? options.hasModifier : getRandomBetween(0, 4) !== 0;
+  const hasModifier = typeof options.hasModifier !== 'undefined' ? options.hasModifier : Utils.getRandomBetween(0, 4) !== 0;
   if (hasModifier) url += `&objmod=${Utils.getRandomBool() ? WordService.generateAdjective() : await WordService.getRandomPredecessorAsync(options.object)}`;
   return await HttpService.httpGet(url);
 }
