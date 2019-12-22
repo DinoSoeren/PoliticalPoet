@@ -227,7 +227,7 @@ function extractPhrasesFrom(text, numPhrases = 3) {
 const POEM_LINE_COUNT = 4;
 
 async function writePoemAsync(person) {
-  const topic = getRandomSynonym(getRandomTopic());
+  const topic = await getRandomSynonym(getRandomTopic());
   const isPersonFirst = getRandomBetween(0, 2) === 0;
   const subject = isPersonFirst ? person.name : topic;
   const object = isPersonFirst ? topic : person.name;
