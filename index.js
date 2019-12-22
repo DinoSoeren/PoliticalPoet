@@ -111,7 +111,7 @@ function httpGet(api) {
 }
 
 function sendDatamuseRhymeRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?rel_rhy=${word}`);
+  return httpGet(`https://api.datamuse.com/words?rel_rhy=${word.replace(/[^A-Za-z]/g, '')}`);
 }
 
 function getRhymingWords(word) {
@@ -140,7 +140,7 @@ function getRandomRhymingWord(word) {
 }
 
 function sendDatamuseSynonymRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?rel_syn=${word}`);
+  return httpGet(`https://api.datamuse.com/words?rel_syn=${word.replace(/[^A-Za-z]/g, '')}`);
 }
 
 function getSynonyms(word) {
@@ -201,7 +201,7 @@ function clean(text) {
 }
 
 function removeSmallWords(text) {
-  return text.split(' ').filter((w) => w.trim().length > 3).join(' ');
+  return text.split(' ').filter((w) => w.trim().replace(/[^A-Za-z']/g, '').length > 3).join(' ');
 }
 
 function generateText(basis) {
