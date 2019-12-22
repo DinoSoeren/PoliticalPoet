@@ -1,6 +1,7 @@
 const https = require('https');
 const deepai = require('deepai');
 deepai.setApiKey('quickstart-QUdJIGlzIGNvbWluZy4uLi4K');
+var Sentencer = require('sentencer');
 
 const people = [
   {name: 'Andrew Yang', twitter: '@AndrewYang'},
