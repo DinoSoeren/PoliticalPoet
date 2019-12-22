@@ -59,7 +59,7 @@ function sendDatamuseRhymeRequest(word) {
 }
 
 function getRhymingWords(word) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     sendDatamuseRhymeRequest(word).then((words) => {
       console.log(`Found ${words.length} words that rhyme with ${word}.`);
       resolve(words);
@@ -78,7 +78,7 @@ function sendLinguatoolsSentenceRequest(options) {
 }
 
 function getSentence(options) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     sendLinguatoolsSentenceRequest(options).then((sentence) => {
       resolve(sentence);
     }).catch(() => {
@@ -92,7 +92,7 @@ function generateVerb() {
 }
 
 function generateText(basis) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     console.log(`Calling DeepAI to generate text from: ${basis}`);
     deepai.callStandardApi('text-generator', {
       'text': basis,
