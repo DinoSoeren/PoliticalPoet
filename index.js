@@ -80,6 +80,7 @@ function sendLinguatoolsSentenceRequest(options) {
 function getSentence(options) {
   return new Promise((resolve, reject) => {
     sendLinguatoolsSentenceRequest(options).then((sentence) => {
+      console.log(`Generated sentence from Linguatools: ${sentence}`);
       resolve(sentence);
     }).catch(() => {
       reject('No sentence for: ' + options);
@@ -118,9 +119,10 @@ exports.writePoem = (req, res) => {
   console.log(`Chosen subject: ${subject}`);
   getRhymingWords(subject).then((rhymingWords) => {
     const objects = rhymingWords.map((w) => w.word).slice(0,3);
-    const sentence = getSentence({'subject': person.name, 'verb': generateVerb(), 'objects': objects});
-    generateText(sentence).then((text) => {
-      res.status(200).send(text);
+    getSentence({'subject': person.name, 'verb': generateVerb(), 'objects': objects}).then((sentence) => {
+      generateText(sentence).then((text) => {
+        res.status(200).send(text);
+      });
     });
   });
 };
