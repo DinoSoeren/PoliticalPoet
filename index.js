@@ -61,6 +61,10 @@ function getRandomItem(arr) {
   return arr[getRandomBetween(0, arr.length)];
 }
 
+function getLastItem(arr) {
+  return arr[arr.length-1];
+}
+
 function getRandomTopic() {
   return getRandomItem(TOPICS);
 }
@@ -235,7 +239,7 @@ async function writePoemAsync(person) {
   const poemLines = [];
   const personSentence = await getSentence({'subject': subject, 'verb': getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst});
   poemLines.push(personSentence);
-  const personRhymeSentence = await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(isPersonFirst ? object : object.split(' ')[1])});
+  const personRhymeSentence = await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(getLastItem(personSentence.split(' ')))});
   poemLines.push(personRhymeSentence);
   console.log(`Poem so far:\n ${poemLines.join('\n')}`);
   const text = await generateText(personSentence);
@@ -243,7 +247,7 @@ async function writePoemAsync(person) {
   for (let i = 0; i < phrases.length; i++) {
     poemLines.push(phrases[i].words.join(' '));
     const words = phrases[i].words;
-    const rhyme = await getRandomRhymingWord(words[words.length-1]);
+    const rhyme = await getRandomRhymingWord(getLastItem(words));
     const synonym = await getRandomSynonym(getLongestWord(words));
     const rhymingSentence = await getSentence({'subject': synonym, 'verb': getRandomVerb(), 'object': rhyme});
     poemLines.push(rhymingSentence);
