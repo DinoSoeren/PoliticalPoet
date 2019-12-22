@@ -223,7 +223,7 @@ function generateText(basis) {
 function extractPhrasesFrom(text, numPhrases = 3) {
   const sentenceArray = text.split(/[\.\!\?\,]/);
   const phrases = new Array(numPhrases);
-  const startIdx = 1; // getRandomBetween(1, sentenceArray.length);
+  const startIdx = getRandomBetween(1, sentenceArray.length - numPhrases);
   for (let i = 0; i < numPhrases; i++) {
     const sentence = sentenceArray[startIdx + i];
     const words = sentence.trim().split(' ').map((w) => w.trim());
