@@ -23,6 +23,13 @@ const subjects = [
   'banana'
 ];
 
+const verbs = [
+  'is', 'goes', 'takes', 'looks', 'gets', 'talks',
+  'thinks', 'hopes', 'dreams', 'fakes', 'likes', 'hates',
+  'argues', 'waves', 'blesses', 'prays', 'yells', 'tweets',
+  'debates', 'runs', 'focuses', 'forgets', 'remembers'
+];
+
 function getRandomBetween(i, j) {
   return Math.floor(Math.random() * j) + i;
 }
@@ -33,6 +40,10 @@ function getRandomSubject() {
 
 function getRandomPerson() {
   return people[getRandomBetween(0, people.length)];
+}
+
+function getRandomVerb() {
+  return verbs[getRandomBetween(0, verbs.length)];
 }
 
 function httpGet(api) {
@@ -92,8 +103,8 @@ function getSentence(options) {
   });
 }
 
-function generateVerb() {
-  return Sentencer.make("{{ verb }}");
+function generateAdjective() {
+  return Sentencer.make("{{ adjective }}");
 }
 
 function generateText(basis) {
@@ -111,6 +122,18 @@ function generateText(basis) {
   });
 }
 
+async function writePoemAsync(person) {
+  const subject = getRandomSubject();
+  console.log(`Chosen subject: ${subject}`);
+  const sentence = await getSentence({'subject': person.name, 'verb': getRandomVerb(), 'objects': [subject]});
+  const text = await generateText(sentence);
+  /*
+  const rhymingWords = await getRhymingWords(subject);
+  const rhyme = rhymingWords.map((w) => w.word)[getRandomBetween(0, rhymingWords.length)];
+    */
+  return text;
+}
+
 /**
  * Responds to any HTTP request.
  *
@@ -120,15 +143,10 @@ function generateText(basis) {
 exports.writePoem = (req, res) => {
   const personName = req.query.name || req.body.name;
   const person = personName ? {name: personName} : getRandomPerson();
-  const subject = getRandomSubject();
-  console.log(`Chosen subject: ${subject}`);
-  getRhymingWords(subject).then((rhymingWords) => {
-    const objects = rhymingWords.map((w) => w.word).slice(0,3);
-    getSentence({'subject': person.name, 'verb': generateVerb(), 'objects': objects}).then((sentence) => {
-      generateText(sentence).then((text) => {
-        res.status(200).send(text);
-      });
-    });
+  writePoemAsync(person).then((poem) => {
+    res.status(200).send(poem);
+  }).catch((err) => {
+    res.status(500).send(err);
   });
 };
 
