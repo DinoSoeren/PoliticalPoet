@@ -113,8 +113,8 @@ function generateText(basis) {
     deepai.callStandardApi('text-generator', {
       'text': basis,
     }).then((text) => {
-      console.log(`Generated text from DeepAI: ${text}`);
-      resolve(text);
+      console.log(`Generated text from DeepAI: ${text.text}`);
+      resolve(text.text);
     }).catch((err) => {
       console.log(`Error: Failed to generate text for '${basis}'. ${err}`);
       reject(err);
