@@ -1,6 +1,6 @@
 const https = require('https');
 const deepai = require('deepai');
-deepai.setApiKey('quickstart-QUdJIGlzIGNvbWluZy4uLi4K');
+deepai.setApiKey(process.env.DEEP_AI_API_KEY);
 const Sentencer = require('sentencer');
 const Twitter = require('twitter');
 
