@@ -71,6 +71,9 @@ function getRhymingWords(word) {
 
 function sendLinguatoolsSentenceRequest(options) {
   let url = `https://lt-nlgservice.herokuapp.com/rest/english/realise?subject=${options.subject}`;
+  if (options.verb) {
+    url += `&verb=${verb}`;
+  }
   if (options.objects && Array.isArray(options.objects) && options.objects.length > 0) {
     options.objects.forEach((obj) => url += `&object=${obj}`);
   }
@@ -83,6 +86,7 @@ function getSentence(options) {
       console.log(`Generated sentence from Linguatools: ${response.sentence}`);
       resolve(response.sentence);
     }).catch((err) => {
+      console.log(`Error: Failed to get sentence for '${options}'. ${err}`);
       reject(err);
     });
   });
@@ -101,6 +105,7 @@ function generateText(basis) {
       console.log(`Generated text from DeepAI: ${text}`);
       resolve(text);
     }).catch((err) => {
+      console.log(`Error: Failed to generate text for '${basis}'. ${err}`);
       reject(err);
     });
   });
