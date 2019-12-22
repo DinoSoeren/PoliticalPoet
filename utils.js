@@ -29,3 +29,7 @@ const removeSmallWords = exports.removeSmallWords = function(text, minLength = -
   const newText = text.split(' ').filter((w) => w.trim().replace(/[^A-Za-z']/g, '').length > minLength).join(' ');
   return newText.trim() || text;
 }
+
+const removePunctuation = exports.removePunctuation = function(word) {
+  return word.replace(/[^A-Za-z]/g, '');
+}

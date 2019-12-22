@@ -14,18 +14,16 @@ const PEOPLE = [
 ];
 
 const TOPICS = [
-  'earth','climate','gender',
-  'food','health','brain',
-  'treason','democracy','serenity',
-  'love','hate','mail','crime',
-  'death','banana','joke','monkey'
+  'earth','climate','food','country','democracy','crime',
+  'death','banana','joke','monkey','news','politics','healthcare',
+  'taxes','kickboxing','music','starwars','Tupac'
 ];
 
 const VERBS = [
-  'is', 'go', 'do', 'take', 'look', 'get', 'talk',
-  'think', 'hope', 'dream', 'fake', 'like', 'hate',
-  'argue', 'wave', 'blesse', 'pray', 'yell', 'tweet',
-  'debate', 'run', 'focus', 'forget', 'remember'
+  'is', 'take', 'get', 'think', 'like', 'love',
+  'hate', 'tweet', 'debate', 'run', 'post',
+  'forget', 'remember', 'kill', 'destroy',
+  'extract', 'prolong', 'imagine'
 ];
 
 const getRandomTopic = exports.getRandomTopic = function() {
@@ -48,10 +46,9 @@ const generateNoun = exports.generateNoun = function() {
   return Sentencer.make("{{ noun }}");
 }
 
-const getRhymingWordsAsync = exports.getRhymingWordsAsync = async function(word) {
-  const wordWithNoPunctuation = word.replace(/[^A-Za-z]/g, '');
-  const perfectRhymeUrl = `https://api.datamuse.com/words?rel_rhy=${wordWithNoPunctuation}`;
-  const nearRhymeUrl = `https://api.datamuse.com/words?rel_nry=${wordWithNoPunctuation}`;
+async function getRhymingWordsAsync(word) {
+  const perfectRhymeUrl = `https://api.datamuse.com/words?rel_rhy=${word}`;
+  const nearRhymeUrl = `https://api.datamuse.com/words?rel_nry=${word}`;
   let words;
 
   try {
@@ -74,20 +71,20 @@ const getRhymingWordsAsync = exports.getRhymingWordsAsync = async function(word)
 }
 
 const getRhymeAsync = exports.getRhymeAsync = async function(word) {
+  word = Utils.removePunctuation(word);
   let rhymes = await getRhymingWordsAsync(word);
   if (!rhymes || rhymes.length === 0) {
     rhymes = [{word: word}];
   }
   const maxIdx = Math.floor(Math.min(4, rhymes.length/4));
-  const rhyme = rhymes.length > 0 ? Utils.getRandomItem(rhymingWords, maxIdx).word : word;
+  const rhyme = rhymes.length > 0 ? Utils.getRandomItem(rhymes, maxIdx).word : word;
   console.log(`Using ${rhyme} to rhyme with ${word}`);
   return rhyme;
 }
 
-const getSynonymsAsync = exports.getSynonymsAsync = async function(word) {
-  const wordWithNoPunctuation = word.replace(/[^A-Za-z]/g, '');
-  const synonymUrl = `https://api.datamuse.com/words?rel_syn=${wordWithNoPunctuation}`;
-  const soundsLikeUrl = `https://api.datamuse.com/words?sl=${wordWithNoPunctuation}`;
+async function getSynonymsAsync(word) {
+  const synonymUrl = `https://api.datamuse.com/words?rel_syn=${word}`;
+  const soundsLikeUrl = `https://api.datamuse.com/words?sl=${word}`;
   let words;
 
   try {
@@ -110,6 +107,7 @@ const getSynonymsAsync = exports.getSynonymsAsync = async function(word) {
 }
 
 const getSynonymAsync = exports.getSynonymAsync = async function(word) {
+  word = Utils.removePunctuation(word);
   let synonyms = await getSynonymsAsync(word);
   if (!synonyms || synonyms.length === 0) {
     synonyms = [{word: word}];
@@ -120,9 +118,8 @@ const getSynonymAsync = exports.getSynonymAsync = async function(word) {
   return synonym;
 }
 
-const getPredecessorsAsync = exports.getPredecessorsAsync = async function(word) {
-  const wordWithNoPunctuation = word.replace(/[^A-Za-z]/g, '');
-  const url = `https://api.datamuse.com/words?rel_bgb=${wordWithNoPunctuation}`;
+async function getPredecessorsAsync(word) {
+  const url = `https://api.datamuse.com/words?rel_bgb=${word}`;
   let words;
 
   try {
@@ -136,6 +133,7 @@ const getPredecessorsAsync = exports.getPredecessorsAsync = async function(word)
 }
 
 const getPredecessorAsync = exports.getPredecessorAsync = async function(word) {
+  word = Utils.removePunctuation(word);
   let predecessors = await getPredecessorsAsync(word);
   if (!predecessors || predecessors.length === 0) {
     predecessors = [{word: generateAdjective()}];
