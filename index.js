@@ -15,20 +15,19 @@ const PEOPLE = [
   {name: 'Tulsi Gabbard', twitter: '@TulsiGabbard'},
 ];
 
-const SUBJECTS = [
+const TOPICS = [
   'earth','climate','gender',
-  'jealousy','health','mindfulness',
+  'food','health','brain',
   'treason','democracy','serenity',
-  'love','hate','sex','crime',
-  'death',
-  'banana'
+  'love','hate','mail','crime',
+  'death','banana','joke','monkey'
 ];
 
 const VERBS = [
-  'is', 'goes', 'takes', 'looks', 'gets', 'talks',
-  'thinks', 'hopes', 'dreams', 'fakes', 'likes', 'hates',
-  'argues', 'waves', 'blesses', 'prays', 'yells', 'tweets',
-  'debates', 'runs', 'focuses', 'forgets', 'remembers'
+  'is', 'go', 'do', 'take', 'look', 'get', 'talk',
+  'think', 'hope', 'dream', 'fake', 'like', 'hate',
+  'argue', 'wave', 'blesse', 'pray', 'yell', 'tweet',
+  'debate', 'run', 'focus', 'forget', 'remember'
 ];
 
 const twitterClient = new Twitter({
@@ -63,7 +62,7 @@ function getRandomItem(arr) {
 }
 
 function getRandomTopic() {
-  return getRandomItem(SUBJECTS);
+  return getRandomItem(TOPICS);
 }
 
 function getRandomPerson() {
@@ -124,14 +123,14 @@ function getRhymingWords(word) {
 }
 
 function getRandomRhymingWord(word) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     getRhymingWords(word).then((rhymingWords) => {
       const rhyme = rhymingWords.length > 0 ? getRandomItem(rhymingWords).word : word;
       console.log(`Using ${rhyme} to rhyme with ${word}`);
       resolve(rhyme);
     }).catch((err) => {
       console.log(`Failed to get rhyme for ${word}: ${err.message}`);
-      reject(err);
+      resolve(word);
     });
   });
 }
@@ -153,14 +152,14 @@ function getSynonyms(word) {
 }
 
 function getRandomSynonym(word) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     getSynonyms(word).then((words) => {
       const synonym = words.length > 0 ? getRandomItem(words).word : word;
       console.log(`Using ${synonym} as a synonym for ${word}`);
       resolve(synonym);
     }).catch((err) => {
       console.log(`Failed to get synonym for ${word}: ${err.message}`);
-      reject(err);
+      resolve(word);
     });
   });
 }
@@ -228,7 +227,7 @@ function extractPhrasesFrom(text, numPhrases = 3) {
 const POEM_LINE_COUNT = 4;
 
 async function writePoemAsync(person) {
-  const topic = getRandomTopic();
+  const topic = getRandomSynonym(getRandomTopic());
   const isPersonFirst = getRandomBetween(0, 2) === 0;
   const subject = isPersonFirst ? person.name : topic;
   const object = isPersonFirst ? topic : person.name;
