@@ -80,6 +80,21 @@ function getRhymingWords(word) {
   });
 }
 
+function sendDatamuseSynonymRequest(word) {
+  return httpGet(`https://api.datamuse.com/words?rel_syn=${word}`);
+}
+
+function getSynonyms(word) {
+  return new Promise((resolve, reject) => {
+    sendDatamuseSynonymRequest(word).then((words) => {
+      console.log(`Found ${words.length} synonyms of ${word}.`);
+      resolve(words);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+
 function sendLinguatoolsSentenceRequest(options) {
   let url = `https://lt-nlgservice.herokuapp.com/rest/english/realise?subject=${options.subject}`;
   if (options.verb) {
@@ -94,8 +109,9 @@ function sendLinguatoolsSentenceRequest(options) {
 function getSentence(options) {
   return new Promise((resolve, reject) => {
     sendLinguatoolsSentenceRequest(options).then((response) => {
-      console.log(`Generated sentence from Linguatools: ${response.sentence}`);
-      resolve(response.sentence.replace('The ', ''));
+      const sentence = response.sentence.replace('The ', '');
+      console.log(`Generated sentence from Linguatools: ${sentence}`);
+      resolve(sentence);
     }).catch((err) => {
       console.log(`Error: Failed to get sentence for '${options}'. ${err}`);
       reject(err);
@@ -117,8 +133,9 @@ function generateText(basis) {
     deepai.callStandardApi('text-generator', {
       'text': basis,
     }).then((text) => {
-      console.log(`Generated text from DeepAI: ${JSON.stringify(text)}`);
-      resolve(clean(text.output));
+      const cleanedText = clean(text.output);
+      console.log(`Generated text from DeepAI: ${cleanedText}`);
+      resolve(cleanedText);
     }).catch((err) => {
       console.log(`Error: Failed to generate text for '${basis}'. ${err}`);
       reject(err);
@@ -127,18 +144,18 @@ function generateText(basis) {
 }
 
 function extractPhrasesFrom(text, numPhrases = 3) {
-  const sentenceArray = text.split('.');
+  const sentenceArray = text.split(/[\.\!\?\,]/);
   const phrases = new Array(numPhrases);
+  const startIdx = getRandomBetween(1, sentenceArray.length);
   for (let i = 0; i < numPhrases; i++) {
-    const sentence = sentenceArray[getRandomBetween(0, sentenceArray.length)];
+    const sentence = sentenceArray[startIdx + i];
     const words = sentence.trim().split(' ').map((w) => w.trim());
-    const startWordIdx = Math.max(0, getRandomBetween(0, words.length - 6));
-    phrases[i] = {'words': words.slice(startWordIdx, Math.min(words.length, startWordIdx + 6))};
+    phrases[i] = {'words': words.slice(0, Math.min(words.length, 8))};
   }
   return phrases;
 }
 
-const POEM_LINE_COUNT = 4;
+const POEM_LINE_COUNT = 6;
 
 async function writePoemAsync(person) {
   const subject = getRandomSubject();
@@ -147,7 +164,6 @@ async function writePoemAsync(person) {
   const personSentence = await getSentence({'subject': person.name, 'verb': getRandomVerb(), 'objects': [subject]});
   poemLines.push(personSentence);
   const text = await generateText(personSentence);
-  const wordArray = text.split(' ').map((w) => w.trim());
   const phrases = extractPhrasesFrom(text, POEM_LINE_COUNT/2);
   poemLines.push(phrases[0].words.join(' '));
   for (let i = 1; i < phrases.length; i++) {
@@ -155,7 +171,9 @@ async function writePoemAsync(person) {
     const words = phrases[i].words;
     const rhymingWords = await getRhymingWords(words[words.length-1]);
     const rhyme = rhymingWords.map((w) => w.word)[getRandomBetween(0, rhymingWords.length)];
-    const rhymingSentence = await getSentence({'subject': wordArray[getRandomBetween(0, wordArray.length)], 'verb': getRandomVerb(), 'objects': [rhyme]});
+    const synonyms = await getSynonyms(words[words.length-1]);
+    const synonym = synonyms.map((w) => w.word)[getRandomBetween(0, synonyms.length)];
+    const rhymingSentence = await getSentence({'subject': synonym, 'verb': getRandomVerb(), 'objects': [rhyme]});
     poemLines.push(rhymingSentence);
   }
   return poemLines.join('\n');
