@@ -1,6 +1,6 @@
 const https = require('https');
 
-exports.httpGet = function(api) {
+export function httpGet(api) {
   console.log(`GET: ${api}`);
   return new Promise((resolve, reject) => {
     https.get(api, (resp) => {

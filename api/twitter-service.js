@@ -7,7 +7,7 @@ const twitterClient = new Twitter({
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 });
 
-exports.sendTweet = function(tweetText) {
+export function sendTweet(tweetText) {
   console.log(`Sending tweet: ${tweetText}`);
   return new Promise((resolve, reject) => {
     twitterClient.post('statuses/update', {'status': tweetText}, (error, tweet, response) => {

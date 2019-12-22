@@ -2,6 +2,7 @@
   "name": "politicalpoet",
   "version": "0.0.1",
   "dependencies": {
+    "@babel/preset-env": "^7.7.7",
     "deepai": "^1.0.15",
     "sentencer": "^0.2.0",
     "twitter": "^1.7.1"

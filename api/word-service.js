@@ -28,23 +28,23 @@ const VERBS = [
   'debate', 'run', 'focus', 'forget', 'remember'
 ];
 
-exports.getRandomTopic = function() {
+export function getRandomTopic() {
   return Utils.getRandomItem(TOPICS);
 }
 
-exports.getRandomPerson = function() {
+export function getRandomPerson() {
   return Utils.getRandomItem(PEOPLE);
 }
 
-exports.getRandomVerb = function() {
+export function getRandomVerb() {
   return Utils.getRandomItem(VERBS);
 }
 
-exports.generateAdjective = function() {
+export function generateAdjective() {
   return Sentencer.make("{{ adjective }}");
 }
 
-exports.generateNoun = function() {
+export function generateNoun() {
   return Sentencer.make("{{ noun }}");
 }
 
@@ -52,7 +52,7 @@ function sendDatamuseRhymeRequest(word) {
   return HttpService.httpGet(`https://api.datamuse.com/words?rel_nry=${word.replace(/[^A-Za-z]/g, '')}`);
 }
 
-exports.getRhymingWordsAsync = function(word) {
+export function getRhymingWordsAsync(word) {
   return new Promise((resolve, reject) => {
     sendDatamuseRhymeRequest(word).then((words) => {
       console.log(`Found ${words.length} words that rhyme with ${word}.`);
@@ -64,7 +64,7 @@ exports.getRhymingWordsAsync = function(word) {
   });
 }
 
-exports.getRandomRhymingWordAsync = function(word) {
+export function getRandomRhymingWordAsync(word) {
   return new Promise((resolve) => {
     getRhymingWordsAsync(word).then((rhymingWords) => {
       const rhyme = rhymingWords.length > 0 ? Utils.getRandomItem(rhymingWords, 5).word : word;
@@ -81,7 +81,7 @@ function sendDatamuseSynonymRequest(word) {
   return HttpService.httpGet(`https://api.datamuse.com/words?rel_syn=${word.replace(/[^A-Za-z]/g, '')}`);
 }
 
-exports.getSynonymsAsync = function(word) {
+export function getSynonymsAsync(word) {
   return new Promise((resolve, reject) => {
     sendDatamuseSynonymRequest(word).then((words) => {
       console.log(`Found ${words.length} synonyms of ${word}.`);
@@ -93,7 +93,7 @@ exports.getSynonymsAsync = function(word) {
   });
 }
 
-exports.getRandomSynonymAsync = function(word) {
+export function getRandomSynonymAsync(word) {
   return new Promise((resolve) => {
     getSynonymsAsync(word).then((words) => {
       const synonym = words.length > 0 ? Utils.getRandomItem(words, 5).word : word;
@@ -110,7 +110,7 @@ function sendDatamusePredecessorsRequest(word) {
   return HttpService.httpGet(`https://api.datamuse.com/words?rel_bgb=${word.replace(/[^A-Za-z]/g, '')}`);
 }
 
-exports.getPredecessorsAsync = function(word) {
+export function getPredecessorsAsync(word) {
   return new Promise((resolve, reject) => {
     sendDatamusePredecessorsRequest(word).then((words) => {
       console.log(`Found ${words.length} predecessors of ${word}.`);
@@ -122,7 +122,7 @@ exports.getPredecessorsAsync = function(word) {
   });
 }
 
-exports.getRandomPredecessorAsync = function(word) {
+export function getRandomPredecessorAsync(word) {
   return new Promise((resolve) => {
     getPredecessorsAsync(word).then((words) => {
       const predecessor = words.length > 0 ? Utils.getRandomItem(words, 5).word : word;
