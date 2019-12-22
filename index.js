@@ -3,7 +3,7 @@ const deepai = require('deepai');
 deepai.setApiKey('quickstart-QUdJIGlzIGNvbWluZy4uLi4K');
 var Sentencer = require('sentencer');
 
-const people = [
+const PEOPLE = [
   {name: 'Andrew Yang', twitter: '@AndrewYang'},
   {name: 'Bernie Sanders', twitter: '@BernieSanders'},
   {name: 'Donald Trump', twitter: '@realDonaldTrump'},
@@ -14,7 +14,7 @@ const people = [
   {name: 'Tulsi Gabbard', twitter: '@TulsiGabbard'},
 ];
 
-const subjects = [
+const SUBJECTS = [
   'earth','climate','gender',
   'jealousy','health','mindfulness',
   'treason','democracy','serenity',
@@ -23,7 +23,7 @@ const subjects = [
   'banana'
 ];
 
-const verbs = [
+const VERBS = [
   'is', 'goes', 'takes', 'looks', 'gets', 'talks',
   'thinks', 'hopes', 'dreams', 'fakes', 'likes', 'hates',
   'argues', 'waves', 'blesses', 'prays', 'yells', 'tweets',
@@ -34,16 +34,26 @@ function getRandomBetween(i, j) {
   return Math.floor(Math.random() * j) + i;
 }
 
-function getRandomSubject() {
-  return subjects[getRandomBetween(0, subjects.length)];
+function getRandomItem(arr) {
+  return arr[getRandomBetween(0, arr.length)];
+}
+
+function getRandomTopic() {
+  return getRandomItem(SUBJECTS);
 }
 
 function getRandomPerson() {
-  return people[getRandomBetween(0, people.length)];
+  return getRandomItem(PEOPLE);
 }
 
 function getRandomVerb() {
-  return verbs[getRandomBetween(0, verbs.length)];
+  return getRandomItem(VERBS);
+}
+
+function getLongestWord(words) {
+  let longest = words[0];
+  words.forEach((word) => word.length > longest.length ? longest = word : word = word);
+  return longest;
 }
 
 function httpGet(api) {
@@ -59,7 +69,7 @@ function httpGet(api) {
         resolve(result);
       });
     }).on("error", (err) => {
-      console.log("HTTP Error: " + err.message);
+      console.log(`HTTP Error: ${err.message}`);
       reject(err);
     });
   });
@@ -75,7 +85,20 @@ function getRhymingWords(word) {
       console.log(`Found ${words.length} words that rhyme with ${word}.`);
       resolve(words);
     }).catch((err) => {
-      console.log(`Failed to get rhymes for ${word}: ` + err.message);
+      console.log(`Failed to get rhymes for ${word}: ${err.message}`);
+      reject(err);
+    });
+  });
+}
+
+function getRandomRhymingWord(word) {
+  return new Promise((resolve, reject) => {
+    getRhymingWords(word).then((rhymingWords) => {
+      const rhyme = getRandomItem(rhymingWords).word;
+      console.log(`Using ${rhyme} to rhyme with ${word}`);
+      resolve(rhyme);
+    }).catch((err) => {
+      console.log(`Failed to get rhyme for ${word}: ${err.message}`);
       reject(err);
     });
   });
@@ -91,7 +114,20 @@ function getSynonyms(word) {
       console.log(`Found ${words.length} synonyms of ${word}.`);
       resolve(words);
     }).catch((err) => {
-      console.log(`Failed to get synonyms for ${word}: ` + err.message);
+      console.log(`Failed to get synonyms for ${word}: ${err.message}`);
+      reject(err);
+    });
+  });
+}
+
+function getRandomSynonym(word) {
+  return new Promise((resolve, reject) => {
+    getSynonyms(word).then((words) => {
+      const synonym = getRandomItem(words).word;
+      console.log(`Using ${synonym} as a synonym for ${word}`);
+      resolve(synonym);
+    }).catch((err) => {
+      console.log(`Failed to get synonym for ${word}: ${err.message}`);
       reject(err);
     });
   });
@@ -102,8 +138,8 @@ function sendLinguatoolsSentenceRequest(options) {
   if (options.verb) {
     url += `&verb=${options.verb}`;
   }
-  if (options.objects && Array.isArray(options.objects) && options.objects.length > 0) {
-    options.objects.forEach((obj) => url += `&object=${obj}`);
+  if (options.object) {
+    url += `&object=${options.object}`;
   }
   return httpGet(url);
 }
@@ -123,6 +159,10 @@ function getSentence(options) {
 
 function generateAdjective() {
   return Sentencer.make("{{ adjective }}");
+}
+
+function generateNoun() {
+  return Sentencer.make("{{ noun }}");
 }
 
 function clean(text) {
@@ -152,31 +192,45 @@ function extractPhrasesFrom(text, numPhrases = 3) {
   for (let i = 0; i < numPhrases; i++) {
     const sentence = sentenceArray[startIdx + i];
     const words = sentence.trim().split(' ').map((w) => w.trim());
-    phrases[i] = {'words': words.slice(0, Math.min(words.length, 8))};
+    phrases[i] = {'words': words.slice(0, Math.min(words.length, 5))};
   }
   return phrases;
 }
 
-const POEM_LINE_COUNT = 6;
+const POEM_LINE_COUNT = 4;
 
 async function writePoemAsync(person) {
-  const subject = getRandomSubject();
+  const topic = getRandomTopic();
+  const isTopicFirst = getRandomBetween(0, 2) === 0;
+  const subject = isTopicFirst ? person.name : topic;
+  const object = isTopicFirst ? topic : person.name;
   console.log(`Chosen subject: ${subject}`);
   const poemLines = [];
-  const personSentence = await getSentence({'subject': person.name, 'verb': getRandomVerb(), 'objects': [subject]});
+  const personSentence = await getSentence({'subject': subject, 'verb': getRandomVerb(), 'object': object});
   poemLines.push(personSentence);
+  const personRhymeSentence = await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(object)});
+  poemLines.push(personRhymeSentence);
+  console.log(`Poem so far:\n ${poemLines.join('\n')}`);
   const text = await generateText(personSentence);
-  const phrases = extractPhrasesFrom(text, POEM_LINE_COUNT/2);
-  poemLines.push(phrases[0].words.join(' '));
-  for (let i = 1; i < phrases.length; i++) {
+  const phrases = extractPhrasesFrom(text, (POEM_LINE_COUNT-2)/2);
+  for (let i = 0; i < phrases.length; i++) {
     poemLines.push(phrases[i].words.join(' '));
     const words = phrases[i].words;
-    const rhymingWords = await getRhymingWords(words[words.length-1]);
-    const rhyme = rhymingWords.map((w) => w.word)[getRandomBetween(0, rhymingWords.length)];
-    const synonyms = await getSynonyms(words[words.length-1]);
-    const synonym = synonyms.map((w) => w.word)[getRandomBetween(0, synonyms.length)];
-    const rhymingSentence = await getSentence({'subject': synonym, 'verb': getRandomVerb(), 'objects': [rhyme]});
+    const rhyme = await getRandomRhymingWord(words[words.length-1]);
+    const synonym = await getRandomSynonym(getLongestWord(words));
+    const rhymingSentence = await getSentence({'subject': synonym, 'verb': getRandomVerb(), 'object': rhyme});
     poemLines.push(rhymingSentence);
+  }
+  // Swap consecutive lines
+  for (let i = 0; i < POEM_LINE_COUNT; i+=4) {
+    const temp = poemLines[i+1];
+    poemLines[i+1] = poemLines[i+3];
+    poemLines[i+3] = temp;
+  }
+  const shiftAmount = getRandomBetween(1, 3) * 2;
+  console.log(`Shifting lines by ${shiftAmount}`);
+  for (let i = 0; i < shiftAmount; i++) {
+    poemLines.push(poemLines.shift());
   }
   return poemLines.join('\n');
 }
