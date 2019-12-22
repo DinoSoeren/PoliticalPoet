@@ -58,7 +58,7 @@ function extractPhrasesFrom(text, numPhrases = 3) {
   for (let i = 0; i < sentenceArray.length && phraseIdx < numPhrases; i++) {
     const sentence = sentenceArray[i];
     const words = sentence.trim().split(' ');
-    const countBigWords = removeSmallWords(words, 4).length;
+    const countBigWords = Utils.removeSmallWords(words, 4).length;
     if (i >= sentenceArray.length - numPhrases || (words.length <= 7 && countBigWords.length >= 3 && countBigWords.length <= 5)) {
       phrases[phraseIdx++] = {'words': words.slice(0, Math.min(words.length, 7)).map((w) => w.trim())};
     }
