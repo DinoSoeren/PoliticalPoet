@@ -11,3 +11,4 @@ Created by [@DinoSoeren ![on twitter](https://i.imgur.com/tXSoThF.png)](https://
 * [linguatools](https://linguatools.org/language-apis/sentence-generating-api/)
 * [Datamuse](https://www.datamuse.com/api/)
 * [DeepAI](https://deepai.org/machine-learning-model/text-generator)
+* [sentencer](https://www.npmjs.com/package/sentencer)
