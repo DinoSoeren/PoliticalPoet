@@ -228,15 +228,15 @@ async function writePoemAsync(person) {
   // Swap consecutive lines
   for (let i = 0; i < POEM_LINE_COUNT; i+=4) {
     const temp = poemLines[i+1];
-    poemLines[i+1] = poemLines[i+3];
-    poemLines[i+3] = temp;
+    poemLines[i+1] = poemLines[i+2];
+    poemLines[i+2] = temp;
   }
-  const shiftAmount = getRandomBetween(1, 3) * 2;
+  const shiftAmount = getRandomBetween(0, (POEM_LINE_COUNT/2)) * 2;
   console.log(`Shifting lines by ${shiftAmount}`);
   for (let i = 0; i < shiftAmount; i++) {
     poemLines.push(poemLines.shift());
   }
-  return poemLines.join('\n');
+  return poemLines.map((line) => line.replace(/[^A-Za-z' ]/g, '')).map((line) => line.charAt(0).toUpperCase() + line.substring(1)).join('\n');
 }
 
 /**
