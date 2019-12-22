@@ -74,7 +74,7 @@ const getRhymingWordsAsync = exports.getRhymingWordsAsync = async function(word)
 }
 
 const getRhymeAsync = exports.getRhymeAsync = async function(word) {
-  const rhymes = await getRhymingWordsAsync(word);
+  let rhymes = await getRhymingWordsAsync(word);
   if (!rhymes || rhymes.length === 0) {
     rhymes = [{word: word}];
   }
@@ -110,7 +110,7 @@ const getSynonymsAsync = exports.getSynonymsAsync = async function(word) {
 }
 
 const getSynonymAsync = exports.getSynonymAsync = async function(word) {
-  const synonyms = await getSynonymsAsync(word);
+  let synonyms = await getSynonymsAsync(word);
   if (!synonyms || synonyms.length === 0) {
     synonyms = [{word: word}];
   }
@@ -136,7 +136,7 @@ const getPredecessorsAsync = exports.getPredecessorsAsync = async function(word)
 }
 
 const getPredecessorAsync = exports.getPredecessorAsync = async function(word) {
-  const predecessors = await getPredecessorsAsync(word);
+  let predecessors = await getPredecessorsAsync(word);
   if (!predecessors || predecessors.length === 0) {
     predecessors = [{word: generateAdjective()}];
   }

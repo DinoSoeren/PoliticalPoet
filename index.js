@@ -29,7 +29,7 @@ async function getSentence(options) {
     sentence = response.sentence; //.replace('The ', '');
     console.log(`Generated sentence from Linguatools: ${sentence}`);
   } catch(err) {
-    console.log(`Error: Failed to get sentence for '${options}'. ${err}`);
+    console.log(`Error: Failed to get sentence for '${JSON.stringify(options)}'. ${err}`);
   }
 
   return sentence;
