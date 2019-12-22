@@ -122,6 +122,7 @@ exports.writePoem = (req, res) => {
       TwitterService.sendTweet(tweet);
     }
   }).catch((err) => {
+    console.log(`Error: ${JSON.stringify(err)}`);
     res.status(500).send(err);
   });
 };
