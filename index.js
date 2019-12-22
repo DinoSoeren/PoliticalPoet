@@ -39,6 +39,7 @@ const twitterClient = new Twitter({
 });
 
 function sendTweet(tweetText) {
+  console.log(`Sending tweet: ${tweetText}`);
   return new Promise((resolve, reject) => {
     twitterClient.post('statuses/update', {'status': tweetText}, (error, tweet, response) => {
       if (error) {
@@ -269,6 +270,7 @@ async function writePoemAsync(person) {
  * @param {!express:Response} res HTTP response context.
  */
 exports.writePoem = (req, res) => {
+  console.log(`Environment variables: ${JSON.stringify(process.env)}`);
   const personName = req.query.name || req.body.name;
   const person = personName ? {name: personName} : getRandomPerson();
   writePoemAsync(person).then((poem) => {
