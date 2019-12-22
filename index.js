@@ -87,6 +87,10 @@ function getSentence(options) {
   });
 }
 
+function generateVerb() {
+  return Sentencer.make("{{ verb }}");
+}
+
 function generateText(basis) {
   return new Promise((resolve) => {
     console.log(`Calling DeepAI to generate text from: ${basis}`);
@@ -108,13 +112,14 @@ function generateText(basis) {
  * @param {!express:Response} res HTTP response context.
  */
 exports.writePoem = (req, res) => {
-  const person = req.query.person || req.body.person || getRandomPerson();
+  const personName = req.query.name || req.body.name;
+  const person = personName ? {name: personName} : getRandomPerson();
   const subject = getRandomSubject();
   console.log(`Chosen subject: ${subject}`);
-  getRhymingWords(person).then((rhymingWords) => {
+  getRhymingWords(subject).then((rhymingWords) => {
     const objects = rhymingWords.map((w) => w.word).slice(0,3);
-    // getSentence({'subject': subject, 'objects': objects})
-    generateText(objects.join(' ')).then((text) => {
+    const sentence = getSentence({'subject': person.name, 'verb': generateVerb(), 'objects': objects});
+    generateText(sentence).then((text) => {
       res.status(200).send(text);
     });
   });
