@@ -143,14 +143,15 @@ function getRandomSynonym(word) {
 
 function sendLinguatoolsSentenceRequest(options) {
   const host = 'https://lt-nlgservice.herokuapp.com/rest/english/realise';
-  let url = `${host}?subject=${options.subject}&verb=${options.verb}&object=${options.object}&objdet=the`;
-  const isPerfect = getRandomBetween(0, 2) === 0;
+  let url = `${host}?subject=${options.subject}&verb=${options.verb}&object=${options.object}`;
+  if (options.useObjDet) url += `&objdet=the`;
+  const isPerfect = typeof options.isPerfect !== 'undefined' ? options.isPerfect : getRandomBetween(0, 2) === 0;
   if (isPerfect) url += '&perfect=perfect';
-  const isPassive = getRandomBetween(0, 2) === 0;
+  const isPassive = typeof options.isPassive !== 'undefined' ? options.isPassive : getRandomBetween(0, 2) === 0;
   if (!isPerfect && isPassive) url += '&passive=passive';
-  const isQuestion = getRandomBetween(0, 2) === 0;
+  const isQuestion = typeof options.isQuestion !== 'undefined' ? options.isQuestion : getRandomBetween(0, 2) === 0;
   if (isQuestion) url += '&sentencetype=yesno';
-  const hasModifier = getRandomBetween(0, 4) !== 0;
+  const hasModifier = typeof options.hasModifier !== 'undefined' ? options.hasModifier : getRandomBetween(0, 4) !== 0;
   if (hasModifier) url += `&objmod=${generateAdjective()}`;
   return httpGet(url);
 }
@@ -204,14 +205,14 @@ const POEM_LINE_COUNT = 4;
 
 async function writePoemAsync(person) {
   const topic = getRandomTopic();
-  const isTopicFirst = getRandomBetween(0, 2) === 0;
-  const subject = isTopicFirst ? person.name : topic;
-  const object = isTopicFirst ? topic : person.name;
+  const isPersonFirst = getRandomBetween(0, 2) === 0;
+  const subject = isPersonFirst ? person.name : topic;
+  const object = isPersonFirst ? topic : person.name;
   console.log(`Chosen subject: ${subject}`);
   const poemLines = [];
-  const personSentence = await getSentence({'subject': subject, 'verb': getRandomVerb(), 'object': object});
+  const personSentence = await getSentence({'subject': subject, 'verb': getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst});
   poemLines.push(personSentence);
-  const personRhymeSentence = await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(object)});
+  const personRhymeSentence = await getSentence({'subject': generateNoun(), 'verb': getRandomVerb(), 'object': await getRandomRhymingWord(isPersonFirst ? object : object.split(' ')[1])});
   poemLines.push(personRhymeSentence);
   console.log(`Poem so far:\n ${poemLines.join('\n')}`);
   const text = await generateText(personSentence);
