@@ -21,7 +21,7 @@ const getLongestWord = exports.getLongestWord = function(words) {
 }
 
 const cleanText = exports.cleanText = function(text) {
-  return text.replace('\n', '').replace(/[^A-Za-z'\.\!\,\? ]/g, '');
+  return text.replace('\n', '').replace(/[^A-Za-z'\.\!\,\? ]/g, '').replace(/ [^A-Za-z]+ /g, '').replace(/[ ]+/g, ' ');
 }
 
 const removeSmallWords = exports.removeSmallWords = function(text, minLength = -1) {

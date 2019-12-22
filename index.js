@@ -52,13 +52,16 @@ function generateText(basis) {
 }
 
 function extractPhrasesFrom(text, numPhrases = 3) {
-  const sentenceArray = text.split(/[\.\!\?\,]/);
+  const sentenceArray = text.split(/[\.\!\?]/);
   const phrases = new Array(numPhrases);
-  const startIdx = Utils.getRandomBetween(1, sentenceArray.length - numPhrases);
-  for (let i = 0; i < numPhrases; i++) {
-    const sentence = sentenceArray[startIdx + i];
-    const words = sentence.trim().split(' ').map((w) => w.trim());
-    phrases[i] = {'words': words.slice(0, Math.min(words.length, 5))};
+  let phraseIdx = 0;
+  for (let i = 0; i < sentenceArray.length && phraseIdx < numPhrases; i++) {
+    const sentence = sentenceArray[i];
+    const words = sentence.trim().split(' ');
+    const countBigWords = removeSmallWords(words, 4).length;
+    if (i >= sentenceArray.length - numPhrases || (words.length <= 7 && countBigWords.length >= 3 && countBigWords.length <= 5)) {
+      phrases[phraseIdx++] = {'words': words.slice(0, Math.min(words.length, 7)).map((w) => w.trim())};
+    }
   }
   return phrases;
 }
