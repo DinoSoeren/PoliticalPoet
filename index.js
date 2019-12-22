@@ -17,21 +17,22 @@ async function sendLinguatoolsSentenceRequest(options) {
   const isQuestion = typeof options.isQuestion !== 'undefined' ? options.isQuestion : Utils.getRandomBool();
   if (isQuestion) url += '&sentencetype=yesno';
   const hasModifier = typeof options.hasModifier !== 'undefined' ? options.hasModifier : Utils.getRandomBetween(0, 4) !== 0;
-  if (hasModifier) url += `&objmod=${Utils.getRandomBool() ? WordService.generateAdjective() : await WordService.getRandomPredecessorAsync(options.object)}`;
+  if (hasModifier) url += `&objmod=${await WordService.getPredecessorAsync(options.object)}`;
   return await HttpService.httpGet(url);
 }
 
-function getSentence(options) {
-  return new Promise((resolve, reject) => {
-    sendLinguatoolsSentenceRequest(options).then((response) => {
-      const sentence = response.sentence.replace('The ', '');
-      console.log(`Generated sentence from Linguatools: ${sentence}`);
-      resolve(sentence);
-    }).catch((err) => {
-      console.log(`Error: Failed to get sentence for '${options}'. ${err}`);
-      reject(err);
-    });
-  });
+async function getSentence(options) {
+  let sentence;
+  
+  try {
+    const response = await sendLinguatoolsSentenceRequest(options);
+    sentence = response.sentence; //.replace('The ', '');
+    console.log(`Generated sentence from Linguatools: ${sentence}`);
+  } catch(err) {
+    console.log(`Error: Failed to get sentence for '${options}'. ${err}`);
+  }
+
+  return sentence;
 }
 
 function generateText(basis) {
@@ -66,7 +67,7 @@ const POEM_LINE_COUNT = 4;
 
 async function writePoemAsync(person) {
   const selectedTopic = Utils.getRandomBetween(0, 4) === 0 ? WordService.getRandomTopic() : WordService.generateNoun();
-  const topic = Utils.getRandomBetween(0, 4) === 0 ? selectedTopic : await WordService.getRandomSynonymAsync(selectedTopic);
+  const topic = Utils.getRandomBetween(0, 4) === 0 ? selectedTopic : await WordService.getSynonymAsync(selectedTopic);
   const isPersonFirst = Utils.getRandomBool();
   const subject = isPersonFirst ? person.name : topic;
   const object = isPersonFirst ? topic : person.name;
@@ -74,7 +75,7 @@ async function writePoemAsync(person) {
   const poemLines = [];
   const personSentence = Utils.removeSmallWords(await getSentence({'subject': subject, 'verb': WordService.getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst}));
   poemLines.push(personSentence);
-  const personRhymeSentence = Utils.removeSmallWords(await getSentence({'subject': WordService.generateNoun(), 'verb': WordService.getRandomVerb(), 'object': await WordService.getRandomRhymingWordAsync(Utils.getLastItem(personSentence.split(' ')))}));
+  const personRhymeSentence = Utils.removeSmallWords(await getSentence({'subject': WordService.generateNoun(), 'verb': WordService.getRandomVerb(), 'object': await WordService.getRhymeAsync(Utils.getLastItem(personSentence.split(' ')))}));
   poemLines.push(personRhymeSentence);
   console.log(`Poem so far:\n ${poemLines.join('\n')}`);
   const text = await generateText(personSentence);
@@ -83,8 +84,8 @@ async function writePoemAsync(person) {
     const phrase = Utils.removeSmallWords(phrases[i].words.join(' '));
     poemLines.push(phrase);
     const words = phrase.split(' ');
-    const rhyme = await WordService.getRandomRhymingWordAsync(Utils.getLastItem(words));
-    const synonym = await WordService.getRandomSynonymAsync(Utils.getLongestWord(words));
+    const rhyme = await WordService.getRhymeAsync(Utils.getLastItem(words));
+    const synonym = await WordService.getSynonymAsync(WordService.generateNoun());
     const rhymingSentence = Utils.removeSmallWords(await getSentence({'subject': synonym, 'verb': WordService.getRandomVerb(), 'object': rhyme, 'isPassive': false}));
     poemLines.push(rhymingSentence);
   }

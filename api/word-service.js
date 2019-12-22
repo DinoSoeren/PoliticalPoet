@@ -48,89 +48,99 @@ const generateNoun = exports.generateNoun = function() {
   return Sentencer.make("{{ noun }}");
 }
 
-function sendDatamuseRhymeRequest(word) {
-  return HttpService.httpGet(`https://api.datamuse.com/words?rel_nry=${word.replace(/[^A-Za-z]/g, '')}`);
+const getRhymingWordsAsync = exports.getRhymingWordsAsync = async function(word) {
+  const wordWithNoPunctuation = word.replace(/[^A-Za-z]/g, '');
+  const perfectRhymeUrl = `https://api.datamuse.com/words?rel_rhy=${wordWithNoPunctuation}`;
+  const nearRhymeUrl = `https://api.datamuse.com/words?rel_nry=${wordWithNoPunctuation}`;
+  let words;
+
+  try {
+    words = await HttpService.httpGet(perfectRhymeUrl);
+    console.log(`Found ${words.length} perfect rhymes with ${word}.`);
+  } catch (err) {
+    console.log(`Failed to get perfect rhymes for ${word}. ${err.message}.`);
+  }
+
+  if (!words || words.length === 0) {
+    try {
+      words = await HttpService.httpGet(nearRhymeUrl);
+      console.log(`Found ${words.length} near rhymes with ${word}.`);
+    } catch (err) {
+      console.log(`Failed to get rhymes for ${word}. ${err.message}.`);
+      throw err;
+    }
+  }
+
+  return words;
 }
 
-const getRhymingWordsAsync = exports.getRhymingWordsAsync = function(word) {
-  return new Promise((resolve, reject) => {
-    sendDatamuseRhymeRequest(word).then((words) => {
-      console.log(`Found ${words.length} words that rhyme with ${word}.`);
-      resolve(words);
-    }).catch((err) => {
-      console.log(`Failed to get rhymes for ${word}: ${err.message}`);
-      reject(err);
-    });
-  });
-}
-
-const getRandomRhymingWordAsync = exports.getRandomRhymingWordAsync = function(word) {
-  return new Promise((resolve) => {
-    getRhymingWordsAsync(word).then((rhymingWords) => {
-      const rhyme = rhymingWords.length > 0 ? Utils.getRandomItem(rhymingWords, 5).word : word;
-      console.log(`Using ${rhyme} to rhyme with ${word}`);
-      resolve(rhyme);
-    }).catch((err) => {
-      console.log(`Failed to get rhyme for ${word}: ${err.message}`);
-      resolve(word);
-    });
-  });
-}
-
-function sendDatamuseSynonymRequest(word) {
-  return HttpService.httpGet(`https://api.datamuse.com/words?rel_syn=${word.replace(/[^A-Za-z]/g, '')}`);
+const getRhymeAsync = exports.getRhymeAsync = async function(word) {
+  const rhymes = await getRhymingWordsAsync(word);
+  const rhyme = rhymes.length > 0 ? Utils.getRandomItem(rhymingWords, Math.floor(Math.min(3, rhymes.length/3))).word : word;
+  console.log(`Using ${rhyme} to rhyme with ${word}`);
+  return rhyme;
 }
 
 const getSynonymsAsync = exports.getSynonymsAsync = function(word) {
-  return new Promise((resolve, reject) => {
-    sendDatamuseSynonymRequest(word).then((words) => {
-      console.log(`Found ${words.length} synonyms of ${word}.`);
-      resolve(words);
-    }).catch((err) => {
-      console.log(`Failed to get synonyms for ${word}: ${err.message}`);
-      reject(err);
-    });
-  });
+  const wordWithNoPunctuation = word.replace(/[^A-Za-z]/g, '');
+  const synonymUrl = `https://api.datamuse.com/words?rel_syn=${wordWithNoPunctuation}`;
+  const soundsLikeUrl = `https://api.datamuse.com/words?sl=${wordWithNoPunctuation}`;
+  let words;
+
+  try {
+    words = await HttpService.httpGet(synonymUrl);
+    console.log(`Found ${words.length} synonyms of ${word}.`);
+  } catch (err) {
+    console.log(`Failed to get synonyms for ${word}. ${err.message}.`);
+  }
+
+  if (!words || words.length === 0) {
+    try {
+      words = await HttpService.httpGet(soundsLikeUrl);
+      console.log(`Found ${words.length} words that sound like ${word}.`);
+    } catch (err) {
+      console.log(`Failed to get words that sound like ${word}. ${err.message}.`);
+      throw err;
+    }
+  }
+
+  return words;
 }
 
-const getRandomSynonymAsync = exports.getRandomSynonymAsync = function(word) {
-  return new Promise((resolve) => {
-    getSynonymsAsync(word).then((words) => {
-      const synonym = words.length > 0 ? Utils.getRandomItem(words, 5).word : word;
-      console.log(`Using ${synonym} as a synonym for ${word}`);
-      resolve(synonym);
-    }).catch((err) => {
-      console.log(`Failed to get synonym for ${word}: ${err.message}`);
-      resolve(word);
-    });
-  });
+const getSynonymAsync = exports.getSynonymAsync = async function(word) {
+  const synonyms = await getSynonymsAsync(word);
+  if (!synonyms || synonyms.length === 0) {
+    synonyms = [word];
+  }
+  const maxIdx = Math.floor(Math.min(4, synonyms.length/4));
+  const synonym = Utils.getRandomItem(synonyms, maxIdx).word;
+  console.log(`Using ${synonym} as a synonym for ${word}`);
+  return synonym;
 }
 
-function sendDatamusePredecessorsRequest(word) {
-  return HttpService.httpGet(`https://api.datamuse.com/words?rel_bgb=${word.replace(/[^A-Za-z]/g, '')}`);
+const getPredecessorsAsync = exports.getPredecessorsAsync = async function(word) {
+  const wordWithNoPunctuation = word.replace(/[^A-Za-z]/g, '');
+  const url = `https://api.datamuse.com/words?rel_bgb=${wordWithNoPunctuation}`;
+  let words;
+
+  try {
+    words = await HttpService.httpGet(url);
+    console.log(`Found ${words.length} predecessors of ${word}.`);
+  } catch (err) {
+    console.log(`Failed to get predecessors for ${word}. ${err.message}`);
+    throw err;
+  }
+
+  return words;
 }
 
-const getPredecessorsAsync = exports.getPredecessorsAsync = function(word) {
-  return new Promise((resolve, reject) => {
-    sendDatamusePredecessorsRequest(word).then((words) => {
-      console.log(`Found ${words.length} predecessors of ${word}.`);
-      resolve(words);
-    }).catch((err) => {
-      console.log(`Failed to get predecessors for ${word}: ${err.message}`);
-      reject(err);
-    });
-  });
-}
-
-const getRandomPredecessorAsync = exports.getRandomPredecessorAsync = function(word) {
-  return new Promise((resolve) => {
-    getPredecessorsAsync(word).then((words) => {
-      const predecessor = words.length > 0 ? Utils.getRandomItem(words, 5).word : word;
-      console.log(`Using ${predecessor} as a predecessor for ${word}`);
-      resolve(predecessor);
-    }).catch((err) => {
-      console.log(`Failed to get predecessor for ${word}: ${err.message}`);
-      resolve(word);
-    });
-  });
+const getPredecessorAsync = exports.getPredecessorAsync = function(word) {
+  const predecessors = await getPredecessorsAsync(word);
+  if (!predecessors || predecessors.length === 0) {
+    predecessors = [generateAdjective()];
+  }
+  const maxIdx = Math.floor(Math.min(4, predecessors.length/4));
+  const predecessor = Utils.getRandomItem(predecessors, maxIdx).word;
+  console.log(`Using ${predecessor} as a predecessor for ${word}`);
+  return predecessor;
 }
