@@ -81,7 +81,7 @@ const getRhymeAsync = exports.getRhymeAsync = async function(word) {
   return rhyme;
 }
 
-const getSynonymsAsync = exports.getSynonymsAsync = function(word) {
+const getSynonymsAsync = exports.getSynonymsAsync = async function(word) {
   const wordWithNoPunctuation = word.replace(/[^A-Za-z]/g, '');
   const synonymUrl = `https://api.datamuse.com/words?rel_syn=${wordWithNoPunctuation}`;
   const soundsLikeUrl = `https://api.datamuse.com/words?sl=${wordWithNoPunctuation}`;
@@ -134,7 +134,7 @@ const getPredecessorsAsync = exports.getPredecessorsAsync = async function(word)
   return words;
 }
 
-const getPredecessorAsync = exports.getPredecessorAsync = function(word) {
+const getPredecessorAsync = exports.getPredecessorAsync = async function(word) {
   const predecessors = await getPredecessorsAsync(word);
   if (!predecessors || predecessors.length === 0) {
     predecessors = [generateAdjective()];
