@@ -140,7 +140,7 @@ function getRandomRhymingWord(word) {
 }
 
 function sendDatamuseSynonymRequest(word) {
-  return httpGet(`https://api.datamuse.com/words?sl=${word.replace(/[^A-Za-z]/g, '')}`);
+  return httpGet(`https://api.datamuse.com/words?rel_syn=${word.replace(/[^A-Za-z]/g, '')}`);
 }
 
 function getSynonyms(word) {
