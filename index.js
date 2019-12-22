@@ -56,6 +56,14 @@ function getLongestWord(words) {
   return longest;
 }
 
+function generateAdjective() {
+  return Sentencer.make("{{ adjective }}");
+}
+
+function generateNoun() {
+  return Sentencer.make("{{ noun }}");
+}
+
 function httpGet(api) {
   console.log(`GET: ${api}`);
   return new Promise((resolve, reject) => {
@@ -94,7 +102,7 @@ function getRhymingWords(word) {
 function getRandomRhymingWord(word) {
   return new Promise((resolve, reject) => {
     getRhymingWords(word).then((rhymingWords) => {
-      const rhyme = getRandomItem(rhymingWords).word;
+      const rhyme = rhymingWords.length > 0 ? getRandomItem(rhymingWords).word : word;
       console.log(`Using ${rhyme} to rhyme with ${word}`);
       resolve(rhyme);
     }).catch((err) => {
@@ -123,7 +131,7 @@ function getSynonyms(word) {
 function getRandomSynonym(word) {
   return new Promise((resolve, reject) => {
     getSynonyms(word).then((words) => {
-      const synonym = getRandomItem(words).word;
+      const synonym = words.length > 0 ? getRandomItem(words).word : word;
       console.log(`Using ${synonym} as a synonym for ${word}`);
       resolve(synonym);
     }).catch((err) => {
@@ -134,13 +142,16 @@ function getRandomSynonym(word) {
 }
 
 function sendLinguatoolsSentenceRequest(options) {
-  let url = `https://lt-nlgservice.herokuapp.com/rest/english/realise?subject=${options.subject}`;
-  if (options.verb) {
-    url += `&verb=${options.verb}`;
-  }
-  if (options.object) {
-    url += `&object=${options.object}`;
-  }
+  const host = 'https://lt-nlgservice.herokuapp.com/rest/english/realise';
+  let url = `${host}?subject=${options.subject}&verb=${options.verb}&object=${options.object}&objdet=the`;
+  const isPerfect = getRandomBetween(0, 2) === 0;
+  if (isPerfect) url += '&perfect=perfect';
+  const isPassive = getRandomBetween(0, 2) === 0;
+  if (!isPerfect && isPassive) url += '&passive=passive';
+  const isQuestion = getRandomBetween(0, 2) === 0;
+  if (isQuestion) url += '&sentencetype=yesno';
+  const hasModifier = getRandomBetween(0, 4) !== 0;
+  if (hasModifier) url += `&objmod=${generateAdjective()}`;
   return httpGet(url);
 }
 
@@ -155,14 +166,6 @@ function getSentence(options) {
       reject(err);
     });
   });
-}
-
-function generateAdjective() {
-  return Sentencer.make("{{ adjective }}");
-}
-
-function generateNoun() {
-  return Sentencer.make("{{ noun }}");
 }
 
 function clean(text) {
