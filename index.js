@@ -79,11 +79,11 @@ function sendLinguatoolsSentenceRequest(options) {
 
 function getSentence(options) {
   return new Promise((resolve, reject) => {
-    sendLinguatoolsSentenceRequest(options).then((sentence) => {
-      console.log(`Generated sentence from Linguatools: ${sentence}`);
-      resolve(sentence);
-    }).catch(() => {
-      reject('No sentence for: ' + options);
+    sendLinguatoolsSentenceRequest(options).then((response) => {
+      console.log(`Generated sentence from Linguatools: ${response.sentence}`);
+      resolve(response.sentence);
+    }).catch((err) => {
+      reject(err);
     });
   });
 }
@@ -100,8 +100,8 @@ function generateText(basis) {
     }).then((text) => {
       console.log(`Generated text from DeepAI: ${text}`);
       resolve(text);
-    }).catch(() => {
-      reject('No text for: ' + basis);
+    }).catch((err) => {
+      reject(err);
     });
   });
 }
