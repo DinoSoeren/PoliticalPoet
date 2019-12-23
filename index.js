@@ -60,6 +60,10 @@ async function writeSimplePoemAsync(person) {
   return poemLines.join('\n');
 }
 
+async function writePoemAsync(person) {
+  return Utils.getRandomBetween(0, 3) === 0 ? await writeAbstractPoemAsync(person) : await writeSimplePoemAsync(person);
+}
+
 /**
  * Responds to any HTTP request.
  *
@@ -69,7 +73,7 @@ async function writeSimplePoemAsync(person) {
 exports.writePoem = (req, res) => {
   const personName = req.query.name || req.body.name;
   const person = personName ? {name: personName} : WordService.getRandomPerson();
-  writeSimplePoemAsync(person).then((poem) => {
+  writePoemAsync(person).then((poem) => {
     const tweet = `${poem}\n\n~~a #shittypoem about ${person.twitter} written by a bot 🤖~~`;
     res.status(200).send(tweet);
     if (process.env.SEND_TWEET) {
