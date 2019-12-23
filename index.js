@@ -46,9 +46,12 @@ async function writeAbstractPoemAsync(person) {
 async function writeSimplePoemAsync(person) {
   const poemLines = new Array(POEM_LINE_COUNT);
   const idxIncludePerson = Utils.getRandomBetween(0, POEM_LINE_COUNT);
+  const nameMode = Utils.getRandomBetween(0, 3);
+  const names = person.name.split(' ');
+  const name = nameMode === 0 ? person.name : (nameMode === 1 ? names[0] : names[1]);
   let rhymeWith = '';
   for (let i = 0; i < POEM_LINE_COUNT; i++) {
-    const sentence = await SentenceService.generateSentence(i === idxIncludePerson ? person.name : '', i === 2 ? '' : rhymeWith);
+    const sentence = await SentenceService.generateSentence(i === idxIncludePerson ? name : '', i === 2 ? '' : rhymeWith);
     if (!rhymeWith) {
       rhymeWith = Utils.getLastItem(sentence.split(' '));
     }
