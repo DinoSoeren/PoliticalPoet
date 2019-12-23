@@ -1,70 +1,8 @@
-const HttpService = require('./api/http-service');
+const PhraseService = require('./api/phrase-service');
+const SentenceService = require('./api/sentence-service');
 const TwitterService = require('./api/twitter-service');
 const WordService = require('./api/word-service');
 const Utils = require('./utils');
-
-const deepai = require('deepai');
-deepai.setApiKey(process.env.DEEP_AI_API_KEY);
-
-async function sendLinguatoolsSentenceRequest(options) {
-  const host = 'https://lt-nlgservice.herokuapp.com/rest/english/realise';
-  let url = `${host}?subject=${options.subject}&verb=${options.verb}&object=${options.object}`;
-  if (options.useObjDet) url += `&objdet=the`;
-  const isPerfect = typeof options.isPerfect !== 'undefined' ? options.isPerfect : Utils.getRandomBool();
-  if (isPerfect) url += '&perfect=perfect';
-  const isPassive = typeof options.isPassive !== 'undefined' ? options.isPassive : Utils.getRandomBool();
-  if (!isPerfect && isPassive) url += '&passive=passive';
-  const isQuestion = typeof options.isQuestion !== 'undefined' ? options.isQuestion : Utils.getRandomBool();
-  if (isQuestion) url += '&sentencetype=yesno';
-  const hasModifier = typeof options.hasModifier !== 'undefined' ? options.hasModifier : Utils.getRandomBetween(0, 4) !== 0;
-  if (hasModifier) url += `&objmod=${await WordService.getPredecessorAsync(options.object)}`;
-  return await HttpService.httpGet(url);
-}
-
-async function getSentence(options) {
-  let sentence;
-  
-  try {
-    const response = await sendLinguatoolsSentenceRequest(options);
-    sentence = response.sentence; //.replace('The ', '');
-    console.log(`Generated sentence from Linguatools: ${sentence}`);
-  } catch(err) {
-    console.log(`Error: Failed to get sentence for '${JSON.stringify(options)}'. ${err}`);
-  }
-
-  return sentence;
-}
-
-function generateText(basis) {
-  return new Promise((resolve, reject) => {
-    console.log(`Calling DeepAI to generate text from: ${basis}`);
-    deepai.callStandardApi('text-generator', {
-      'text': basis,
-    }).then((text) => {
-      const cleanedText = Utils.cleanText(text.output);
-      console.log(`Generated text from DeepAI: ${cleanedText}`);
-      resolve(cleanedText);
-    }).catch((err) => {
-      console.log(`Error: Failed to generate text for '${basis}'. ${err}`);
-      reject(err);
-    });
-  });
-}
-
-function extractPhrasesFrom(text, numPhrases = 3) {
-  const sentenceArray = text.split(/[\.\!\?\,]/);
-  const phrases = new Array(numPhrases);
-  let phraseIdx = 0;
-  for (let i = 1; i < sentenceArray.length && phraseIdx < numPhrases; i++) {
-    const sentence = sentenceArray[i];
-    const words = sentence.trim().split(' ');
-    const countBigWords = Utils.removeSmallWords(sentence.trim(), 4).split(' ').length;
-    if (i >= sentenceArray.length - numPhrases || (words.length >= 3 && words.length <= 7 && countBigWords <= 5)) {
-      phrases[phraseIdx++] = {'words': words.slice(0, Math.min(words.length, 7)).map((w) => w.trim())};
-    }
-  }
-  return phrases;
-}
 
 const POEM_LINE_COUNT = 4;
 
@@ -76,13 +14,12 @@ async function writePoemAsync(person) {
   const object = isPersonFirst ? topic : person.name;
   console.log(`Chosen subject: ${subject}`);
   const poemLines = [];
-  const personSentence = Utils.removeSmallWords(await getSentence({'subject': subject, 'verb': WordService.getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst}));
+  const personSentence = Utils.removeSmallWords(await SentenceService.buildSentence({'subject': subject, 'verb': WordService.getRandomVerb(), 'object': object, 'useObjDet': isPersonFirst}));
   poemLines.push(personSentence);
-  const personRhymeSentence = Utils.removeSmallWords(await getSentence({'subject': WordService.generateNoun(), 'verb': WordService.getRandomVerb(), 'object': await WordService.getRhymeAsync(Utils.getLastItem(personSentence.split(' ')))}));
+  const personRhymeSentence = Utils.removeSmallWords(await SentenceService.buildSentence({'subject': WordService.generateNoun(), 'verb': WordService.getRandomVerb(), 'object': await WordService.getRhymeAsync(Utils.getLastItem(personSentence.split(' ')))}));
   poemLines.push(personRhymeSentence);
   console.log(`Poem so far:\n ${poemLines.join('\n')}`);
-  const text = await generateText(personSentence);
-  const phrases = extractPhrasesFrom(text, (POEM_LINE_COUNT-2)/2);
+  const phrases = await PhraseService.generatePhrasesFrom(personSentence, (POEM_LINE_COUNT-2)/2);
   for (let i = 0; i < phrases.length; i++) {
     const phrase = Utils.removeSmallWords(phrases[i].words.join(' '));
     poemLines.push(phrase);
