@@ -90,13 +90,13 @@ const generateSentence = exports.generateSentence = async function(topic = '', r
   const usesVerb = Utils.getRandomBool();
   const rhymeWord = !!rhymesWith ? await WordService.getRhymeAsync(rhymesWith) : '';
   if (usesVerb) {
-    const topicIsSubject = rhymeWord ? true : Utils.getRandomBool();
+    const topicIsSubject = !!rhymesWith ? true : Utils.getRandomBool();
     return await buildSentence({
       subject: (topicIsSubject ? topic : '') || generateThing(false, false),
       verb: WordService.getRandomVerb(),
       object: rhymeWord || (topicIsSubject ? '' : topic) || generateThing(false, false),
       hasModifier: false,
-      isPassive: rhymeWord ? false : Utils.getRandomBool(),
+      isPassive: !!rhymesWith ? false : Utils.getRandomBool(),
     });
   } else {
     return sentencify(generateThing());
