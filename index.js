@@ -26,7 +26,7 @@ async function writePoemAsync(person) {
     const words = phrase.split(' ');
     const rhyme = await WordService.getRhymeAsync(Utils.getLastItem(words));
     const synonym = await WordService.getSynonymAsync(WordService.generateNoun());
-    const rhymingSentence = Utils.removeSmallWords(await getSentence({'subject': synonym, 'verb': WordService.getRandomVerb(), 'object': rhyme, 'isPassive': false}));
+    const rhymingSentence = Utils.removeSmallWords(await SentenceService.buildSentence({'subject': synonym, 'verb': WordService.getRandomVerb(), 'object': rhyme, 'isPassive': false}));
     poemLines.push(rhymingSentence);
   }
   // Swap consecutive lines
