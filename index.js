@@ -6,7 +6,7 @@ const Utils = require('./utils');
 
 const POEM_LINE_COUNT = 4;
 
-async function writePoemAsync(person) {
+async function writeAbstractPoemAsync(person) {
   const selectedTopic = Utils.getRandomBetween(0, 4) === 0 ? WordService.getRandomTopic() : WordService.generateNoun();
   const topic = Utils.getRandomBetween(0, 4) === 0 ? selectedTopic : await WordService.getSynonymAsync(selectedTopic);
   const isPersonFirst = Utils.getRandomBool();
@@ -43,6 +43,20 @@ async function writePoemAsync(person) {
   return poemLines.map((line) => line.replace(/[^A-Za-z' ]/g, '')).map((line) => line.charAt(0).toUpperCase() + line.substring(1)).join('\n');
 }
 
+async function writeSimplePoemAsync(person) {
+  const poemLines = new Array(POEM_LINE_COUNT);
+  const idxIncludePerson = Utils.getRandomBetween(0, POEM_LINE_COUNT);
+  let rhymeWith = '';
+  for (let i = 0; i < POEM_LINE_COUNT; i++) {
+    const sentence = await SentenceService.generateSentence(i === idxIncludePerson ? person.name : '', i === 2 ? '' : rhymeWith);
+    if (!rhymeWith) {
+      rhymeWith = Utils.getLastItem(sentence.split(' '));
+    }
+    poemLines[i] = sentence;
+  }
+  return poemLines.join('\n');
+}
+
 /**
  * Responds to any HTTP request.
  *
@@ -52,7 +66,7 @@ async function writePoemAsync(person) {
 exports.writePoem = (req, res) => {
   const personName = req.query.name || req.body.name;
   const person = personName ? {name: personName} : WordService.getRandomPerson();
-  writePoemAsync(person).then((poem) => {
+  writeSimplePoemAsync(person).then((poem) => {
     const tweet = `${poem}\n\n~~a #shittypoem about ${person.twitter} written by a bot 🤖~~`;
     res.status(200).send(tweet);
     if (process.env.SEND_TWEET) {

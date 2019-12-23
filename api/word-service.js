@@ -20,10 +20,12 @@ const TOPICS = [
 ];
 
 const VERBS = [
-  'is', 'take', 'get', 'think', 'like', 'love',
+  'take', 'get', 'think', 'like', 'love',
   'hate', 'tweet', 'debate', 'run', 'post',
   'forget', 'remember', 'kill', 'destroy',
-  'extract', 'prolong', 'imagine'
+  'extract', 'prolong', 'imagine', 'join',
+  'fortell', 'include', 'exclude', 'judge',
+  'want', 'steal', 'embrace', 'fight', 'resist'
 ];
 
 const getRandomTopic = exports.getRandomTopic = function() {
